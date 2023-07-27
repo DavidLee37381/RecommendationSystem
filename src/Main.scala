@@ -1,5 +1,5 @@
 import scala.io.Source
-import scala.io.StdIn.readLine
+
 
 object Main {
 
@@ -11,15 +11,9 @@ object Main {
   def wordCountScala(s: String) = {
 
     val exclude = Source.fromFile(exc).getLines().toList.flatMap(line => line.split((" ")))
-   // println(exclude)
-    //var allWords = Source.fromFile(fileName).getLines.toList.flatMap(line => line.split(" ")).map(w => (w.filter(_.isLetter).toLowerCase))
-    var s1 = s.replace("-", " ")
-    s1 = s1.replace("\"", "")
-    s1 = s1.replace("\'", "")
+    var s1 = s.map(w => (if (!(w.isLetter || w.isSpaceChar)) ' ' else w))
     s1 = s1.replace("  ", " ")
     s1 = s1.replace("  ", " ").toLowerCase()
-    //var s1 = s
-    //s1 = s1.map(w => (if (!(w.isLetter || w.isSpaceChar)) w = ' ' ))
     var allWords = s1.split(" ")
     allWords = allWords.filterNot(element => exclude.contains(element))
     println(s)
