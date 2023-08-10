@@ -7,3 +7,11 @@
 #Ignore .idea
 *.idea
 
+#Ignore target
+/target/
+
+#Ignore bsp
+/.bsp/
+
+#Ignore project
+/project/
