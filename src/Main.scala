@@ -1,4 +1,5 @@
 import scala.io.Source
+import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 
 object Main {
@@ -6,6 +7,15 @@ object Main {
   val inputFile = "src/prova.txt"
   val exc = "src/ignore.txt"
   val path = "src/books.csv"
+
+ /* def wordCountSpark(fileName: String) = {
+    val conf = new SparkConf().setAppName("wordCount").
+      setMaster("local[6]")
+    val allWordsWithOne = new SparkContext(conf).textFile(fileName).
+      flatMap(line => line.split(" ")).
+      map(w => (w.filter(_.isLetter).toUpperCase, 1))
+    allWordsWithOne.reduceByKey((x, y) => x + y).collectAsMap()
+  }*/
 
   // wordcount in Scala
   def wordCountScala(s: String) = {
@@ -41,6 +51,7 @@ object Main {
     //println(wordCountScala(pcsvtxt(1)._1 + " " + pcsvtxt(1)._2 + " " + pcsvtxt(1)._3 + " " + pcsvtxt(1)._4))
     (1 to 4).foreach(n => println(wordCountScala(pcsvtxt(n)._1 + " " + pcsvtxt(n)._2 + " " + pcsvtxt(n)._3 + " " + pcsvtxt(n)._4))
       )
+  //  (1 to 4).foreach(n => println(wordCountSpark(pcsvtxt(n)._1 + " " + pcsvtxt(n)._2 + " " + pcsvtxt(n)._3 + " " + pcsvtxt(n)._4)) )
 
 
     println("Hello world!")
