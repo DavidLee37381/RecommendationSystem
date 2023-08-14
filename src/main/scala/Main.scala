@@ -7,9 +7,6 @@ object Main {
     val name = "Alice"
     println(s"My name is $name")
 
-    val squared = square(2)
-    println(s"2 squared is: $squared")
-
   }
 
 }
