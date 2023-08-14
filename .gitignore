@@ -10,8 +10,8 @@
 #Ignore target
 /target/
 
-#Ignore bsp
-/.bsp/
+#Ignore .bsp
+*.bsp
 
 #Ignore project
 /project/
