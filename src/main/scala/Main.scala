@@ -3,8 +3,8 @@ import scala.io.Source
 object Main {
 
   //val inputFile = "src/prova.txt"
-  val exc = "src/ignore.txt"
-  val path = "src/books.csv"
+  val exc = constant.EXCLUDE_PATH
+  val path = constant.DATASET_CSV_PATH
 
   /*def wordCountSpark(s: String) = {
     val conf = new SparkConf().setAppName("wordCount").
