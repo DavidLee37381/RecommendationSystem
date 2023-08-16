@@ -5,6 +5,7 @@ object Main {
   //val inputFile = "src/prova.txt"
   val exc = constant.EXCLUDE_PATH
   val path = constant.DATASET_CSV_PATH
+  val outPath = constant.DATASET_CSV_PATH
 
   /*def wordCountSpark(s: String) = {
     val conf = new SparkConf().setAppName("wordCount").
