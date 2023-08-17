@@ -13,10 +13,10 @@ object CSVManager {
 
   def similarity(s: String): String ={
     var spl = s.split(" ")
-    spl.foreach(println)
+    //spl.foreach(println)
     spl.foreach(w1  => if (w1.length > 3) {
       var p1 = spl.indexOf(w1)
-      println(w1)
+    //  println(w1)
       spl.foreach(w2 =>
       if ((spl.indexOf(w1) != spl.indexOf(w2)) && (w2.length > 3) ){
         if (compare(w1,w2)) {
@@ -35,7 +35,7 @@ object CSVManager {
     var min_s = math.min(w1.length, w2.length)
     var b = true
     for(i <- 0 until min_s) {
-      println(w1(i) + " " +  w2(i))
+    //  println(w1(i) + " " +  w2(i))
       b = b && (w1(i) == w2(i)) }
     b
   }
