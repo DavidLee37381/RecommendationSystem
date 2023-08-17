@@ -34,11 +34,9 @@ object CSVManager {
   def compare (w1:String, w2:String) : Boolean ={
     var min_s = math.min(w1.length, w2.length)
     var b = true
-    if (min_s < 3) false
-    if (min_s < 5) for(i <- 0 until min_s) {
+    for(i <- 0 until min_s) {
       println(w1(i) + " " +  w2(i))
       b = b && (w1(i) == w2(i)) }
-    else for(i <- 0 to (min_s-2) ) { b = b && (w1(i) == w2(i)) }
     b
   }
 
