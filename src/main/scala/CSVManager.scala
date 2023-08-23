@@ -16,7 +16,7 @@ object CSVManager {
     //spl.foreach(println)
     spl.foreach(w1  => if (w1.length > 3) {
       var p1 = spl.indexOf(w1)
-    //  println(w1)
+      //  println(w1)
       spl.foreach(w2 =>
       if ((spl.indexOf(w1) != spl.indexOf(w2)) && (w2.length > 3) ){
         if (compare(w1,w2)) {
@@ -27,8 +27,60 @@ object CSVManager {
             spl(p2) = w1
         }
       })
+      spl(p1) = toRoot(w1)
     })
+
     spl.mkString(" ")
+  }
+
+  def toRoot(w:String) : String ={
+  var t = w
+    if(t == "mice")
+      t = "mouse"
+    if (t == "teeth")
+      t = "tooth"
+    if (t == "children")
+      t = "child"
+    if (t == "women")
+      t = "woman"
+    if (t == "men")
+      t = "man"
+    if (t == "geese")
+      t = "goose"
+    if (t == "feet")
+      t = "foot"
+    if (t == "people")
+      t = "person"
+    if (t == "oxen")
+      t = "ox"
+
+
+    val exceptions = List("species", "series", "this", "mess", "s")
+
+    if (t.endsWith("iness"))
+      t = t.slice(0, w.length - 5).concat("y")
+    if (t.endsWith("ness"))
+      t = t.slice(0, w.length - 4)
+    if (!exceptions.contains(t)) {
+      if (t.endsWith("ies"))
+        t = w.slice(0, w.length - 3).concat("y")
+      if (t.endsWith("ves"))
+        t = t.slice(0, w.length - 3).concat("f")
+      if (t.endsWith("es"))
+        t = t.slice(0, w.length - 2)
+      if (t.endsWith("s"))
+        t = t.slice(0, w.length - 1)
+    }
+    if (t.endsWith("ing"))
+      t = t.slice(0, w.length - 3)
+    if (t.endsWith("ed"))
+      t = t.slice(0, w.length - 2)
+    if (t.endsWith("er"))
+      t = t.slice(0, w.length - 2)
+    if (t.endsWith("est") && t!="best" && t!= "forest")
+      t = t.slice(0, w.length - 3)
+
+    t
   }
 
   def compare (w1:String, w2:String) : Boolean ={
