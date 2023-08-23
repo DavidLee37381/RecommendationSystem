@@ -24,8 +24,9 @@ object WordCount {
     println("Frase da analizzare: " + s)
     //println("allWords da considerare: " + allWords)
     val emptyMap = Map[String, Int]() withDefaultValue 0
-    allWords.foldLeft(emptyMap)((a, w) => a + (w -> (a(w) + 1)))
+    val wc = allWords.foldLeft(emptyMap)((a, w) => a + (w -> (a(w) + 1)))
 
+    wc
   }
 
 }

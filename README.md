@@ -17,9 +17,9 @@ Assuming we have a query of keywords: "q1 q2 q3"
    fr_q1_indoc_i = number of times q1 appears in doc_i / number of words in doc_i
 3. repeat step 1 and 2 with q2 and q3
 4. for each row then we calculate the similarity as:
-   sim = fr_q1_indoc_i * log(counter_q1/number of rows)
-   + fr_q2_indoc_i * log(counter_q2/number of rows)
-   + fr_q3_indoc_i * log(counter_q3/number of rows)
+   sim = fr_q1_indoc_i * log(number of rows/counter_q1)
+   + fr_q2_indoc_i * log(number of rows/counter_q2)
+   + fr_q3_indoc_i * log(number of rows/counter_q3)
 
 5. We then print the top X* rows with the highest sim value
    *to be decided
