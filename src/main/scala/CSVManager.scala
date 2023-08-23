@@ -1,10 +1,9 @@
-import scala.collection.immutable.List
 import scala.io.Source
 
 object CSVManager {
 
-  def importer(path: String): List[(String, String, String, String)] =
-  {
+  def importer(path: String):
+  List[(String, String, String, String)] = {
     val csvfile = Source.fromFile(path) //import CSV file
     val lineList = csvfile.getLines().toList
     val wordList = lineList.map(x => x.split(",")).map(x => (x(2), x(3), x(5), x(7)))

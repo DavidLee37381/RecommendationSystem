@@ -1,4 +1,4 @@
-import scala.collection.mutable.Map
+
 object Main {
 
   def main(args: Array[String]): Unit = {
@@ -10,8 +10,6 @@ object Main {
 
     // wordCount
     wordExtracted.slice(0, 6).foreach(println)
-    //test1: filtering keywords
-    //val keywords = List("Love", "Pain", "Happy").map(_.toLowerCase)
     val keywords = QueryManager.getQuery().map(_.toLowerCase)
     println(keywords)
 

@@ -23,6 +23,3 @@ Assuming we have a query of keywords: "q1 q2 q3"
 
 5. We then print the top X* rows with the highest sim value
    *to be decided
-
-
-

@@ -1,6 +1,6 @@
 import scala.io.Source
 
-object WordCount {
+object WordUtil {
 
   /**
    * function of wordCount: count the appears times of each word.
@@ -12,7 +12,7 @@ object WordCount {
    */
 
 
-  def wordCountScala(s: String, kList: List[String]): Map[String, Int] = {
+  def wordCount(s: String, kList: List[String]): Map[String, Int] = {
     val exclude = Source.fromFile(constant.EXCLUDE_PATH).getLines().toList.flatMap(line => line.split(" "))
     var s1 = s.map(w => if (!(w.isLetter || w.isSpaceChar)) ' ' else w)
     s1 = s1.replace("  ", " ")
