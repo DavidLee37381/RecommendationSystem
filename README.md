@@ -1,6 +1,18 @@
 # RecommendationSystem
 This project aimed at completing university course exams. 
 
+### Directory Structure
+- .idea (IntelliJ files)
+- project (plugins and additional settings for sbt)
+- src (source files)
+   - main (application code)
+      - java (Java source files)
+      - scala (Scala source files) <-- This is all we need for now
+      - scala-2.12 (Scala 2.12 specific files)
+   - test (unit tests)
+- target (generated files)
+- build.sbt (build definition file for sbt)
+
 ### The Algorithm
 Note: doc == row
 
