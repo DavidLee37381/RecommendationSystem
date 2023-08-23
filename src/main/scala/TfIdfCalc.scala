@@ -1,11 +1,12 @@
+import scala.collection.mutable
 import scala.collection.mutable.Map
 
-object tf_idf {
+object TfIdfCalc {
 
-  def idf_calc(query: List[String] , dataset :List[(String, String, String, String)]): Map[String, Double] =
+  def idf_calc(query: List[String] , dataset :List[(String, String, String, String)]): mutable.Map[String, Double] =
   {
     val size = dataset.length
-    var docCount: Map[String, Double] = Map.empty[String, Double].withDefaultValue(0.0)
+    var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
     query.foreach(kword =>
       dataset.foreach( row =>
         if ( (row._1+ " " + row._2+ " " + row._3+ " " + row._4).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
