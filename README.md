@@ -15,15 +15,12 @@ This project aimed at completing university course exams.
 
 ### The Algorithm
 Note: doc == row
-
 log == logarithm
-
 in Scala the function is Math.log
-
 After doing WordCount for each row
 
 Assuming we have a query of keywords: "q1 q2 q3"
-1. we check every row of WordCount to see if they contains q1
+1. we check every row of WordCount to see if they contain q1
 2. if it does, counter_q1 +=1 (counter of rows containing q1)
    and we calculate the frequency of q1 in the row
    fr_q1_indoc_i = number of times q1 appears in doc_i / number of words in doc_i
