@@ -11,14 +11,24 @@ object Main {
     // wordCount
     wordExtracted.slice(0, 6).foreach(println)
     val keywords = QueryManager.getQuery().map(_.toLowerCase)
-    println(keywords)
-
     val idf = TfIdfCalc.idf_calc(keywords, wordExtracted)
-    println(idf)
+    println("IDF value: " + idf)
 
 
-  // wordExtracted.foreach(n => println(WordCount.wordCountScala(n._1 + " " + n._2 + " " + n._3 + " " + n._4, keywords)))
-    // ^rows from 0 to 6   ^current row                        ^ title     ^subtitle     ^ tag        ^description
+    val fPath = "dataset/counterFile.txt"
+    var nDoc = 0
+
+    // file counter cleaner
+    WordUtil.cleanFile(fPath)
+
+    wordExtracted.foreach{ n =>
+      nDoc += 1
+      val sRow = n._1 + " " + n._2 + " " + n._3 + " " + n._4
+      WordUtil.printWordCounter(fPath,nDoc, WordUtil.wordCount(sRow, keywords))
+      // ^rows from 0 to 6   ^current row                        ^ title     ^subtitle     ^ tag        ^description
+      val tf = TfIdfCalc.tf_calc(keywords, sRow)
+      println("tf " + tf)
+    }
 
   }
 }
