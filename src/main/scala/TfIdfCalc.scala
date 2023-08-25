@@ -31,7 +31,7 @@ object TfIdfCalc {
    * @return : mutable.Map[String, Double] -> Map(kWord -> tf_value, ...)
    */
   def tfCalc(query: List[String],row: String): mutable.Map[String, Double] ={
-    val docSize: Double = row.size.toDouble
+    val docSize: Double = row.split(" ").length.toDouble
     var wordFreq: Double = 0.0
     var normFreq: Double = 0.0
     val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
@@ -80,7 +80,7 @@ object TfIdfCalc {
     }
     posList = posList.appended(max)
 
-    println( j + ". " + dataset(max)._1)
+    println( j + ". " + dataset(max+1)._1)
     }
 
 
