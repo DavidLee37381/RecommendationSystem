@@ -14,7 +14,7 @@ object Main {
     val idf = TfIdfCalc.idf_calc(keywords, wordExtracted)
     println("IDF value: " + idf)
 
-
+/*
     val fPath = "dataset/counterFile.txt"
     var nDoc = 0
 
@@ -28,7 +28,9 @@ object Main {
       // ^rows from 0 to 6   ^current row                        ^ title     ^subtitle     ^ tag        ^description
       val tf = TfIdfCalc.tf_calc(keywords, sRow)
       println("tf " + tf)
-    }
+    }*/
+
+    TfIdfCalc.idf_tf_calc(keywords, wordExtracted)
 
   }
 }

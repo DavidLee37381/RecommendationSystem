@@ -45,7 +45,36 @@ object TfIdfCalc {
   }
 
   //TODO
-  def idf_tf_calc(): Unit ={
+  def idf_tf_calc(query: List[String] , dataset :List[(String, String, String, String)]): Unit = {
+    var idf_val = idf_calc(query, dataset)
+    var ranks: Array[Double] = Array.empty
+    var tf_v: mutable.Map[String, Double] = Map()
+
+    for (i <- 1 until dataset.length) {
+      var t = 0.0
+      tf_v = tf_calc(query, dataset(i)._1 + dataset(i)._2 + dataset(i)._3 + dataset(i)._4)
+      query.foreach(kword => t = t + (idf_val.getOrElse(kword, 0.0) * tf_v.getOrElse(kword, 0.0)))
+      ranks = ranks :+ t
+
+      if (t > 0) println(dataset(i)._1 + " rank (t): " + t)
+
+    }
+    var posList: List[Int] = List.empty
+    var max = 0
+
+    for( j <- 1 to 10)
+    {
+      max = 0
+    for (i <- 1 until dataset.length-1) {
+      if (ranks(max) < ranks(i) && !posList.contains(i))
+        max = i
+    }
+    posList = posList.appended(max)
+
+    println( j + ". " + dataset(max)._1)
+    }
+
+
     //calls idf_calc
     //calls tf_calc
     //calculates the ranking
