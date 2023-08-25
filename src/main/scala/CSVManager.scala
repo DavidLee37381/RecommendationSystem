@@ -6,10 +6,10 @@ object CSVManager {
   List[(String, String, String, String)] = {
     val csvfile = Source.fromFile(path) //import CSV file
     val lineList = csvfile.getLines().toList
+
+    // TODO the problem of "title1 , title2"
     val wordList = lineList.map(x => x.split(",")).map(x => (x(2), x(3), x(5), x(7)))
-
     csvfile.close()
-
     wordList
   }
 

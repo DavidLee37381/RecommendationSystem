@@ -32,8 +32,8 @@ object TfIdfCalc {
    */
   def tfCalc(query: List[String],row: String): mutable.Map[String, Double] ={
     val docSize: Double = row.split(" ").length.toDouble
-    var wordFreq: Double = 0.0
-    var normFreq: Double = 0.0
+    var wordFreq = 0.0
+    var normFreq = 0.0
     val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
 
