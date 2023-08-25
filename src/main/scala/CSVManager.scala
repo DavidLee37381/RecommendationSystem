@@ -7,6 +7,9 @@ object CSVManager {
     val csvfile = Source.fromFile(path) //import CSV file
     val lineList = csvfile.getLines().toList
     val wordList = lineList.map(x => x.split(",")).map(x => (x(2), x(3), x(5), x(7)))
+
+    csvfile.close()
+
     wordList
   }
 

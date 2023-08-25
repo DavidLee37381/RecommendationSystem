@@ -10,8 +10,9 @@ object Main {
 
     // wordCount
     wordExtracted.slice(0, 6).foreach(println)
-    val keywords = QueryManager.getQuery().map(_.toLowerCase)
-    val idf = TfIdfCalc.idf_calc(keywords, wordExtracted)
+    val queryPath = constant.QUERY_PATH
+    val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
+    val idf = TfIdfCalc.idfCalc(keywords, wordExtracted)
     println("IDF value: " + idf)
 
 /*
@@ -30,7 +31,7 @@ object Main {
       println("tf " + tf)
     }*/
 
-    TfIdfCalc.idf_tf_calc(keywords, wordExtracted)
+    TfIdfCalc.idfTfCalc(keywords, wordExtracted)
 
   }
 }
