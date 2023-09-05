@@ -1,10 +1,13 @@
 import scala.io.Source
-
 import com.opencsv.CSVReader
 import java.io.FileReader
 import scala.collection.mutable.ListBuffer
 
 object CSVManager {
+
+
+
+
 
   def importer(path: String):
   List[(String, String, String, String)] = {

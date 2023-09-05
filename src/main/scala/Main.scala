@@ -1,19 +1,21 @@
-
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 object Main {
 
   def main(args: Array[String]): Unit = {
 
     // import dataset and print
-    val wordExtracted = CSVManager.importer(constant.DATASET_CSV_PATH)
-    CSVManager.print(wordExtracted,1, 8)
+    //val wordExtracted = CSVManager.importer(constant.DATASET_CSV_PATH)
+    val wordExtracted = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7) )
+    //CSVManager.print(wordExtracted,1, 8)
     println(wordExtracted.size)
 
     // wordCount
     wordExtracted.slice(0, 6).foreach(println)
     val queryPath = constant.QUERY_PATH
     val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
-    val idf = TfIdfCalc.idfCalc(keywords, wordExtracted)
-    println("IDF value: " + idf)
+   // val idf = TfIdfCalc.idfCalc(keywords, wordExtracted)
+   // println("IDF value: " + idf)
 
 /*
     val fPath = "dataset/counterFile.txt"
@@ -31,7 +33,10 @@ object Main {
       println("tf " + tf)
     }*/
 
-    TfIdfCalc.idfTfCalc(keywords, wordExtracted)
+    // convert from a list of unmutable Maps to a ListBuffer of mutable maps
+    val datalist = new ListBuffer[collection.mutable.Map[String, String]]()
+    wordExtracted.foreach(map => datalist += map.to(collection.mutable.Map )) //let's fill the ListBuffer
+   TfIdfCalc.idfTfCalc(keywords, datalist.toList) //.toList = converts from ListBuffer to List
 
   }
 }
