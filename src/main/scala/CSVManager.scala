@@ -1,5 +1,9 @@
 import scala.io.Source
 
+import com.opencsv.CSVReader
+import java.io.FileReader
+import scala.collection.mutable.ListBuffer
+
 object CSVManager {
 
   def importer(path: String):
@@ -11,6 +15,28 @@ object CSVManager {
     val wordList = lineList.map(x => x.split(",")).map(x => (x(2), x(3), x(5), x(7)))
     csvfile.close()
     wordList
+  }
+
+  // the new function to replace the function of importer, and to deal the bug of ”title1, title2“
+  def importCsv(csvFile: String, columnIndices: List[Int]): List[Map[String, String]] = {
+    val reader = new CSVReader(new FileReader(csvFile))
+    val header = reader.readNext() // Assuming the first row contains column names
+
+    try {
+      var line: Array[String] = null
+      val data = scala.collection.mutable.ListBuffer[Map[String, String]]()
+
+      while ({ line = reader.readNext(); line != null }) {
+        val rowData = columnIndices.map { columnIndex =>
+          header(columnIndex) -> (if (columnIndex < line.length) line(columnIndex) else "")
+        }.toMap
+        data += rowData
+      }
+
+      data.toList
+    } finally {
+      reader.close()
+    }
   }
 
   def similarity(s: String): String ={
@@ -118,5 +144,4 @@ object CSVManager {
       println("Title: " + s._1 + "\nSubtitle: " + s._2 + "\nTag: " + s._3 + " \nDescription:" + s._4 + "\n --------"))
 
   }
-
 }
