@@ -1,5 +1,10 @@
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkConf
+
+
 object Main {
 
   def main(args: Array[String]): Unit = {
@@ -36,7 +41,13 @@ object Main {
     // convert from a list of unmutable Maps to a ListBuffer of mutable maps
     val datalist = new ListBuffer[collection.mutable.Map[String, String]]()
     wordExtracted.foreach(map => datalist += map.to(collection.mutable.Map )) //let's fill the ListBuffer
-   TfIdfCalc.idfTfCalc(keywords, datalist.toList) //.toList = converts from ListBuffer to List
+//   TfIdfCalc.idfTfCalc(keywords, datalist.toList) //.toList = converts from ListBuffer to List
+
+
+    /*Let's add Spark into the mix*/
+    var sparkvar = wordExtracted.slice(1, 6)
+      .foreach( s => println(WordUtil.wordCountSP(s.get("title").toString, keywords)) )
+
 
   }
 }
