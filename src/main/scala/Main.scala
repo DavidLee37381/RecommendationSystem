@@ -46,7 +46,7 @@ object Main {
 
     /*Let's add Spark into the mix*/
     var sparkvar = wordExtracted.slice(1, 6)
-      .foreach( s => println(WordUtil.wordCountSP(s.get("title").toString, keywords)) )
+      .foreach( s => WordUtil.wordCountSP(s.get("title").toString, keywords).collect().foreach(f => println(f._1 + " | " + f._2 )) )
 
 
   }

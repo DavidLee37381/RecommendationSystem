@@ -6,6 +6,8 @@ import scala.io.Source
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+
 
 object WordUtil {
 
@@ -46,8 +48,11 @@ object WordUtil {
 
   def wordCountSP(s: String, kList: List[String]): RDD[(String, Int)] = {
 
-    val sparkConf = new SparkConf().setAppName("myname").setMaster("mast")
-    val sc = new SparkContext(sparkConf)
+
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[*]")
+      .appName("wordCount")
+      .getOrCreate()
 
 
     val exclude = Source.fromFile(constant.EXCLUDE_PATH).getLines().toList.flatMap(line => line.split(" "))
@@ -57,9 +62,9 @@ object WordUtil {
     s1 = CSVManager.similarity(s1)
     var allWords = s1.split(" ")
     allWords = allWords.filterNot(element => exclude.contains(element))
-    if (kList != null) allWords = allWords.filter(word => kList.contains(word))
+   // if (kList != null) allWords = allWords.filter(word => kList.contains(word))
 
-    val rdd0= sc.parallelize(allWords.toList)
+    val rdd0= spark.sparkContext.parallelize(allWords)
     val rdd1 = rdd0.map(f=> (f,1) )
     val rdd2 = rdd1.reduceByKey(_+_)
     rdd2
