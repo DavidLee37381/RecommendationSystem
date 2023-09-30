@@ -43,8 +43,8 @@ object Main {
 
 
     /*Let's add Spark into the mix*/
-    var sparkvar = wordExtracted.slice(1, 6)
-      .foreach( s => WordUtil.wordCountSP(s.get("title").toString, keywords).collect().foreach(f => println(f._1 + " | " + f._2 )) )
+   // var sparkvar = wordExtracted.slice(1, 6) .foreach( s => WordUtil.wordCountSP(s.get("title").toString, keywords).collect().foreach(f => println(f._1 + " | " + f._2 )) )
+   // CSVManager.importSP(constant.DATASET_CSV_PATH).foreach(println)
 
   }
 }

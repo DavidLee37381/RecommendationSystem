@@ -2,12 +2,22 @@ import scala.io.Source
 import com.opencsv.CSVReader
 import java.io.FileReader
 import scala.collection.mutable.ListBuffer
+import org.apache.spark.sql._
+import org.apache.spark.SparkContext, org.apache.spark.SparkConf
 
 object CSVManager {
 
 
 
+def importSP(path: String): DataFrame ={
+  val spark: SparkSession = SparkSession.builder()
+    .master("local[*]")
+    .appName("CSVReader")
+    .getOrCreate()
 
+  val csvIm = spark.read.option("header", "true").csv(path)
+  csvIm.select("title", "subtitle", "categories", "description")
+}
 
   def importer(path: String):
   List[(String, String, String, String)] = {
@@ -42,7 +52,7 @@ object CSVManager {
 
   /**
    *
-   * @param s
+   * @param String
    * @return
    */
   def similarity(s: String): String ={
