@@ -1,5 +1,10 @@
 import scala.collection.mutable
 import scala.collection.mutable.Map
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+import scala.collection.mutable.ListBuffer
+
 object TfIdfCalc {
 
   /**
@@ -9,7 +14,7 @@ object TfIdfCalc {
    * @return Map docCount
    */
   def idfCalc(query: List[String], dataset : List[mutable.Map[String, String]] /*List[(String, String, String, String)*/): mutable.Map[String, Double] =
-  {0
+  {
     val size = dataset.length
     var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
     query.foreach(kword =>
@@ -20,6 +25,27 @@ object TfIdfCalc {
     docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
 
     docCount
+  }
+
+
+  def idfCalcSP(query: List[String], dataset : List[mutable.Map[String, String]] /*List[(String, String, String, String)*/):
+  RDD[(String, Double)] =
+  {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[*]")
+      .appName("idfCalcSP")
+      .getOrCreate()
+    val size = dataset.length
+    var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
+    query.foreach(kword =>
+      dataset.foreach( row =>
+        if ( (row(constant.Columns(0)) + " " + row(constant.Columns(1))+ " "
+          + row(constant.Columns(2))+ " "
+          + row(constant.Columns(3))).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
+
+    docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
+
+    spark.sparkContext.parallelize(docCount.toSeq)
   }
 
 
@@ -38,7 +64,7 @@ object TfIdfCalc {
     val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
 
-    val wCounter = WordUtil.wordCount(row, query).filter{case (k,v) => v!= null}
+    val wCounter = WordUtil.wordCount(row, query).filter{case (k,v) => v!= 0}
 
       query.foreach { kWord =>
         if (wCounter != null && wCounter.size > 0)
@@ -54,6 +80,36 @@ object TfIdfCalc {
     ris
   }
 
+
+def tfCalcSP(query: List[String],row: String): RDD[(String, Double)] ={
+  val spark: SparkSession = SparkSession.builder()
+    .master("local[*]")
+    .appName("tfCalcSP")
+    .getOrCreate()
+
+  val docSize: Double = row.split(" ").length.toDouble
+  var wordFreq = 0.0
+  var normFreq = 0.0
+  val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
+
+
+  val wCounter = WordUtil.wordCountSP(row, query).filter{case (k,v) => v!= 0}
+
+  query.foreach { kWord =>
+      if (!wCounter.isEmpty())
+        wordFreq = wCounter.filter(pair => pair._1==kWord).map(pair => pair._2).sum()
+      else
+        wordFreq = 0.0
+      normFreq = wordFreq / docSize
+      ris += (kWord -> normFreq)
+
+    }
+  //calculate the normalized frequency for each term of the query
+  // norm frequencies = freq of the term in a row / lengh od the row
+  //                    ^ this is from WordCount
+
+  spark.sparkContext.parallelize(ris.toSeq)
+}
 
 
 
