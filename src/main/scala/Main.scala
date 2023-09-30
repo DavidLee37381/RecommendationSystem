@@ -10,6 +10,7 @@ object Main {
   def main(args: Array[String]): Unit = {
 
     // import dataset and print
+    QueryManager.time(CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7) ))
     val wordExtracted = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7) )
     println(wordExtracted.size)
 
@@ -44,7 +45,7 @@ object Main {
 
     /*Let's add Spark into the mix*/
    // var sparkvar = wordExtracted.slice(1, 6) .foreach( s => WordUtil.wordCountSP(s.get("title").toString, keywords).collect().foreach(f => println(f._1 + " | " + f._2 )) )
-   // CSVManager.importSP(constant.DATASET_CSV_PATH).foreach(println)
+   QueryManager.time(CSVManager.importSP(constant.DATASET_CSV_PATH))
 
   }
 }
