@@ -1,49 +1,26 @@
-import scala.io.Source
 import com.opencsv.CSVReader
 import java.io.FileReader
-import scala.collection.mutable.ListBuffer
-import org.apache.spark.sql._
-import org.apache.spark.SparkContext, org.apache.spark.SparkConf
 
 object CSVManager {
 
-
-
-def importSP(path: String): DataFrame ={
-  val spark: SparkSession = SparkSession.builder()
-    .master("local[*]")
-    .appName("CSVReader")
-    .getOrCreate()
-
-  val csvIm = spark.read.option("header", "true").csv(path)
-  csvIm.select("title", "subtitle", "categories", "description")
-}
-
-  def importer(path: String):
-  List[(String, String, String, String)] = {
-    val csvfile = Source.fromFile(path) //import CSV file
-    val lineList = csvfile.getLines().toList
-    val wordList = lineList.map(x => x.split(",")).map(x => (x(2), x(3), x(5), x(7)))
-    csvfile.close()
-    wordList
-  }
-
-  // the new function to replace the function of importer, and to deal the bug of ”title1, title2“
+  /**
+   * importCsv use the function of scala
+   * @param csvFile
+   * @param columnIndices
+   * @return
+   */
   def importCsv(csvFile: String, columnIndices: List[Int]): List[Map[String, String]] = {
     val reader = new CSVReader(new FileReader(csvFile))
     val header = reader.readNext() // Assuming the first row contains column names
-
     try {
       var line: Array[String] = null
       val data = scala.collection.mutable.ListBuffer[Map[String, String]]()
-
       while ({ line = reader.readNext(); line != null }) {
         val rowData = columnIndices.map { columnIndex =>
           header(columnIndex) -> (if (columnIndex < line.length) line(columnIndex) else "")
         }.toMap
         data += rowData
       }
-
       data.toList
     } finally {
       reader.close()
@@ -51,8 +28,8 @@ def importSP(path: String): DataFrame ={
   }
 
   /**
-   *
-   * @param String
+   * compare the words are same or not
+   * @param s
    * @return
    */
   def similarity(s: String): String ={
@@ -98,7 +75,6 @@ def importSP(path: String): DataFrame ={
     if (t == "oxen")
       t = "ox"
 
-
     val exceptions = List("species", "series", "this", "mess", "s")
 
     if (t.endsWith("iness"))
@@ -123,7 +99,6 @@ def importSP(path: String): DataFrame ={
       t = t.slice(0, w.length - 2)
     if (t.endsWith("est") && t!="best" && t!= "forest")
       t = t.slice(0, w.length - 3)
-
     t
   }
 
@@ -136,27 +111,8 @@ def importSP(path: String): DataFrame ={
     b
   }
 
-  def printOld(wordList: List[(String, String, String, String)]): Unit ={
-    wordList.foreach(s =>
-      println("Title: " + s._1 + "\nSubtitle: " + s._2 + "\nTag: " + s._3 + " \nDescription:" + s._4 + "\n --------"))
-  }
-
   def print(wordList: List[(String, String, String, String)], min :Int,  max : Int): Unit ={
     wordList.slice(min, max).foreach(s =>
-      println("Title: " + s._1 + "\nSubtitle: " + s._2 + "\nTag: " + s._3 + " \nDescription:" + s._4 + "\n --------"))
-
-  }
-
-
-  def printAll(wl: List[(String, String, String, String)]): Unit ={
-   print(wl, 0, wl.size)
-  }
-
-/*
-  It prints the first n elements of the wordlist List
-* */
-  def printTill(wordList: List[(String, String, String, String)], n : Int): Unit ={
-    wordList.slice(0, n).foreach(s =>
       println("Title: " + s._1 + "\nSubtitle: " + s._2 + "\nTag: " + s._3 + " \nDescription:" + s._4 + "\n --------"))
 
   }

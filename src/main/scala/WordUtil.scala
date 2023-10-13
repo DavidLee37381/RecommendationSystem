@@ -1,13 +1,4 @@
-import org.apache.spark
-
-import java.io.{BufferedWriter, File, FileWriter}
-import scala.collection.immutable.Map
 import scala.io.Source
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-
 
 object WordUtil {
 
@@ -20,7 +11,6 @@ object WordUtil {
    * @return
    */
 
-
   def wordCount(s: String, kList: List[String]): Map[String, Int] = {
     val exclude = Source.fromFile(constant.EXCLUDE_PATH).getLines().toList.flatMap(line => line.split(" "))
     var s1 = s.map(w => if (!(w.isLetter || w.isSpaceChar)) ' ' else w)
@@ -30,80 +20,9 @@ object WordUtil {
     var allWords = s1.split(" ")
     allWords = allWords.filterNot(element => exclude.contains(element))
     if (kList != null) allWords = allWords.filter(word => kList.contains(word))
-    //println("Frase da analizzare: " + s)
-    //println("allWords da considerare: " + allWords)
     val emptyMap = Map[String, Int]() withDefaultValue 0
-    val wc = allWords.foldLeft(emptyMap)((a, w) => a + (w -> (a(w) + 1)))
-
-    wc
+    val wordnum = allWords.foldLeft(emptyMap)((a, w) => a + (w -> (a(w) + 1)))
+    wordnum
   }
 
-  /**
-   * function of wordCount for Spark: count the appears times of each keyword.
-   * input: part of csv file (s) and a list of keywords (k) ;
-   * output : RDD (Term [String], Frequency[Int]);
-   * @param s
-   * @return
-   */
-
-  def wordCountSP(s: String, kList: List[String]): RDD[(String, Int)] = {
-
-
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[*]")
-      .appName("wordCount")
-      .getOrCreate()
-
-
-    val exclude = Source.fromFile(constant.EXCLUDE_PATH).getLines().toList.flatMap(line => line.split(" "))
-    var s1 = s.map(w => if (!(w.isLetter || w.isSpaceChar)) ' ' else w)
-    s1 = s1.replace("  ", " ")
-    s1 = s1.replace("  ", " ").toLowerCase()
-    s1 = CSVManager.similarity(s1)
-    var allWords = s1.split(" ")
-    allWords = allWords.filterNot(element => exclude.contains(element))
-   // if (kList != null) allWords = allWords.filter(word => kList.contains(word))
-
-    val rdd0= spark.sparkContext.parallelize(allWords)
-    val rdd1 = rdd0.map(f=> (f,1) )
-    val rdd2 = rdd1.reduceByKey(_+_)
-    rdd2
-  }
-
-
-  /**
-   * function of printWordCounter: memorize a type of table in a file
-   * @param :
-      * fPath: String, the path of the file where output is going to be saved
-      * value: Map[String, Int] result from wordCounter obtained after analizing a document
-   * @return : unit -> write the result in a file
-   */
-  def printWordCounter(fPath: String,docNumber : Int, value: Map[String, Int]) = {
-    val f = new File(fPath)
-    val bw = new BufferedWriter(new FileWriter(f,true))
-    println("value: " + value)
-    //write each row
-    for((kWord, freq) <- value) {
-      if(kWord != null ) {
-        val newRow = s"$docNumber $kWord $freq\n"
-        bw.append(newRow)
-      }
-    }
-    bw.close()
-  }
-
-  /**
-   * function of cleanFile: memorize a type of table in a file
-   *
-   * @param :     * fPath: String, the path of the file where output is going to be saved
-   * @return : unit -> delete an existing file then create it new. A way to clean a file
-   */
-  def cleanFile (fPath: String) = {
-    val file = new File(fPath)
-    //pulizia manuale del file
-    if (file.exists()) {
-      file.delete()
-      file.createNewFile()
-    }
-  }
 }
