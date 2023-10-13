@@ -106,7 +106,6 @@ object CSVManager {
     var min_s = math.min(w1.length, w2.length)
     var b = true
     for(i <- 0 until min_s) {
-    //  println(w1(i) + " " +  w2(i))
       b = b && (w1(i) == w2(i)) }
     b
   }

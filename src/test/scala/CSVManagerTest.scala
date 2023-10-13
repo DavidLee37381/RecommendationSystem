@@ -10,9 +10,6 @@ class CSVManagerTest extends AnyFunSuite{
    * 3. the format of print is not good.
    * you can try run the test code and you will understand why
    */
-  test("CSVManager.importer"){
-    print(CSVManager.importer(constant.DATASET_CSV_PATH))
-  }
 
   test("CsvUtil.importCsv"){
     val columnsData = CsvUtil.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7))

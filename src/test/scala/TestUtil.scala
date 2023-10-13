@@ -10,9 +10,6 @@ class TestUtil extends AnyFunSuite{
    * 3. the format of print is not good.
    * you can try run the test code and you will understand why
    */
-  test("CSVManager.importer"){
-    print(CSVManager.importer(constant.DATASET_CSV_PATH))
-  }
 
   /**
    * test for CsvUtil
@@ -46,8 +43,5 @@ class TestUtil extends AnyFunSuite{
     listList.foreach(list => println(list))
 
   }
-
-
-
 }
 
