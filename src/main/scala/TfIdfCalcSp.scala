@@ -1,5 +1,5 @@
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
 
@@ -18,28 +18,28 @@ object TfIdfCalcSp {
     query.foreach(kword =>
       dataset.foreach( row =>
         if ( (row(constant.Columns(0)) + " " + row(constant.Columns(1))+ " "
-            + row(constant.Columns(2))+ " " + row(constant.Columns(3))).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
+          + row(constant.Columns(2))+ " " + row(constant.Columns(3))).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
 
     docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
 
     docCount
   }
 
-
-  def idfCalcSP(query: List[String], dataset : List[mutable.Map[String, String]] /*List[(String, String, String, String)*/):
+  // DataFrame == Dataset[Row]
+  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
+  // R.toString, where R is a Row type gives us the String
+  def idfCalcSP(query: List[String], dataset : DataFrame):
   RDD[(String, Double)] =
   {
     val spark: SparkSession = SparkSession.builder()
       .master("local[*]")
       .appName("idfCalcSP")
       .getOrCreate()
-    val size = dataset.length
+    val size = dataset.collect().size
     var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
     query.foreach(kword =>
-      dataset.foreach( row =>
-        if ( (row(constant.Columns(0)) + " " + row(constant.Columns(1))+ " "
-          + row(constant.Columns(2))+ " "
-          + row(constant.Columns(3))).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
+      dataset.collect().foreach( row =>
+        if ( row.toString().contains(kword)) docCount(kword) = docCount(kword) + 1 ))
 
     docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
 
@@ -64,33 +64,36 @@ object TfIdfCalcSp {
 
     val wCounter = WordUtil.wordCount(row, query).filter{case (k,v) => v!= 0}
 
-      query.foreach { kWord =>
-        if (wCounter != null && wCounter.nonEmpty)
-          wordFreq = wCounter.getOrElse(kWord, 0).toDouble
-        else
-          wordFreq = 0.0
-        normFreq = wordFreq / docSize
-        ris += (kWord -> normFreq)
-      }
+    query.foreach { kWord =>
+      if (wCounter != null && wCounter.nonEmpty)
+        wordFreq = wCounter.getOrElse(kWord, 0).toDouble
+      else
+        wordFreq = 0.0
+      normFreq = wordFreq / docSize
+      ris += (kWord -> normFreq)
+    }
     ris
   }
 
+  // DataFrame == Dataset[Row]
+  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
+  // R.toString, where R is a Row type gives us the String
+  // Here I'm not sure which variable use to call the function
+  def tfCalcSP(query: List[String], row: String): RDD[(String, Double)] ={
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[*]")
+      .appName("tfCalcSP")
+      .getOrCreate()
 
-def tfCalcSP(query: List[String],row: String): RDD[(String, Double)] ={
-  val spark: SparkSession = SparkSession.builder()
-    .master("local[*]")
-    .appName("tfCalcSP")
-    .getOrCreate()
-
-  val docSize: Double = row.split(" ").length.toDouble
-  var wordFreq = 0.0
-  var normFreq = 0.0
-  val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
+    val docSize: Double = row.split(" ").length.toDouble
+    var wordFreq = 0.0
+    var normFreq = 0.0
+    val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
 
-  val wCounter = WordUtilSp.wordCountSP(row, query).filter{case (k,v) => v!= 0}
+    val wCounter = WordUtilSp.wordCountSP(row, query).filter{case (k,v) => v!= 0}
 
-  query.foreach { kWord =>
+    query.foreach { kWord =>
       if (!wCounter.isEmpty())
         wordFreq = wCounter.filter(pair => pair._1==kWord).map(pair => pair._2).sum()
       else
@@ -100,24 +103,27 @@ def tfCalcSP(query: List[String],row: String): RDD[(String, Double)] ={
 
     }
 
-  spark.sparkContext.parallelize(ris.toSeq)
-}
+    spark.sparkContext.parallelize(ris.toSeq)
+  }
 
 
-
-  def idfTfCalc(query: List[String] , dataset :List[mutable.Map[String, String]]): Unit = {
-    var idf_val = idfCalc(query, dataset)
+  // DataFrame == Dataset[Row]
+  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
+  // R.toString, where R is a Row type gives us the String
+  def idfTfCalcSP(query: List[String] , dataset : DataFrame): Unit = {
+    var idf_val = idfCalcSP(query, dataset)
     var ranks: Array[Double] = Array.empty
     var tf_v: mutable.Map[String, Double] = mutable.Map()
-    println(dataset.size)
-    for (i <- 1 until dataset.length) {
+    println(dataset.collect().length)
+    for (i <- 1 until dataset.collect().length) {
       var t = 0.0
-      tf_v = tfCalc(query, dataset(i)(constant.Columns(0)) + dataset(i)(constant.Columns(1))
-                         + dataset(i)(constant.Columns(2)) + dataset(i)(constant.Columns(3)))
-      query.foreach(kword => t = t + (idf_val.getOrElse(kword, 0.0) * tf_v.getOrElse(kword, 0.0)))
+     // tf_v = tfCalcSP(query, dataset.collect()(i).toString())
+      // TODO: get the values inside the RDDs and multiply the one with the same kword and sum them
+      //   query.foreach(kword => t = t + (idf_val.collect(kword) * tf_v.getOrElse(kword, 0.0)))
+      //            ^ for each word in the query
       ranks = ranks :+ t
 
-      if (t > 0) println(dataset(i)(constant.Columns(0)) + " rank (t): " + t)
+     // if (t > 0) println(dataset(i)(constant.Columns(0)) + " rank (t): " + t)
 
     }
     var posList: List[Int] = List.empty
@@ -126,13 +132,13 @@ def tfCalcSP(query: List[String],row: String): RDD[(String, Double)] ={
     for( j <- 1 to 10)
     {
       max = 0
-      for (i <- 1 until dataset.length-1) {
+      for (i <- 1 until dataset.collect().length-1) {
         if (ranks(max) < ranks(i) && !posList.contains(i))
           max = i
       }
       posList = posList.appended(max)
 
-      println( j + ". " + dataset(max+1)(constant.Columns(0)))
+      //println( j + ". " + dataset(max+1)(constant.Columns(0)))
     }
 
     //calls idf_calc
