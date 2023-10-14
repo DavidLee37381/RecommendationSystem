@@ -1,3 +1,4 @@
+import TfIdfCalc.{idfCalc, tfCalc}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -6,144 +7,104 @@ import scala.collection.mutable
 object TfIdfCalcSp {
 
   /**
-   * inverse document frequency
-   * @param query List
+   * DataFrame == Dataset[Row]
+   * .collect() gives us an Array of Rows instead (you can use it as a normal array)
+   * R.toString, where R is a Row type gives us the String
+   *
+   * @param query
    * @param dataset
-   * @return Map docCount
+   * @return
    */
-  def idfCalc(query: List[String], dataset : List[mutable.Map[String, String]] /*List[(String, String, String, String)*/): mutable.Map[String, Double] =
-  {
-    val size = dataset.length
-    var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
-    query.foreach(kword =>
-      dataset.foreach( row =>
-        if ( (row(constant.Columns(0)) + " " + row(constant.Columns(1))+ " "
-          + row(constant.Columns(2))+ " " + row(constant.Columns(3))).contains(kword)) docCount(kword) = docCount(kword) + 1 ))
-
-    docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
-
-    docCount
+  def idfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): RDD[(String, Double)] = {
+    val size = dataset.count().toDouble
+    val docCount = query.foldLeft(collection.mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, kword) =>
+      val text = dataset.select("title", "subtitle", "categories", "description").collect()
+      text.foreach { row =>
+        val textString = row.mkString(" ")
+        if (textString.contains(kword)) {
+          acc(kword) += 1
+        }
+      }
+      acc
+    }
+    val idfMap = docCount.transform((k, v) => Math.log(size / v))
+    val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
+    idfRDD.collect().foreach {
+      case (key, value) =>
+        println(s"Key: $key, Value: $value")
+    }
+    idfRDD
   }
 
-  // DataFrame == Dataset[Row]
-  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
-  // R.toString, where R is a Row type gives us the String
-  def idfCalcSP(query: List[String], dataset : DataFrame):
-  RDD[(String, Double)] =
-  {
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[*]")
-      .appName("idfCalcSP")
-      .getOrCreate()
-    val size = dataset.collect().size
-    var docCount: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
-    query.foreach(kword =>
-      dataset.collect().foreach( row =>
-        if ( row.toString().contains(kword)) docCount(kword) = docCount(kword) + 1 ))
+  /**
+   * DataFrame == Dataset[Row]
+   * .collect() gives us an Array of Rows instead (you can use it as a normal array)
+   * R.toString, where R is a Row type gives us the String
+   * Here I'm not sure which variable use to call the function
+   *
+   * @param query
+   * @param row
+   * @return
+   */
+  def tfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): RDD[(String, Double)] = {
+    val docSize = dataset.columns.length.toDouble
 
-    docCount.foreach((s: (String, Double)) => docCount(s._1) = Math.log(size / s._2 ) )
+    val wordFreqMap = dataset.rdd.flatMap { row =>
+      val text = row.mkString(" ")
+      val words = text.split(" ").filter(query.contains)
+      words.map(word => (word, 1))
+    }.reduceByKey(_ + _).collectAsMap()
 
-    spark.sparkContext.parallelize(docCount.toSeq)
+    val tfIdfList = query.map { kWord =>
+      val wordFreq = wordFreqMap.getOrElse(kWord, 0)
+      val normFreq = wordFreq / docSize
+      (kWord, normFreq)
+    }
+
+    val tfRDD = spark.sparkContext.parallelize(tfIdfList)
+    tfRDD.collect().foreach {
+      case (key, value) =>
+        println(s"Key: $key, Value: $value")
+    }
+    tfRDD
   }
 
 
   /**
-   * function of tf_calc: memorize a type of table in a file
-   * term frequency
-   * @param :
-   * query: List[String], list of keyword
-   * row : the document that is being analyzed
-   * @return : mutable.Map[String, Double] -> Map(kWord -> tf_value, ...)
+   * DataFrame == Dataset[Row]
+   * .collect() gives us an Array of Rows instead (you can use it as a normal array)
+   * R.toString, where R is a Row type gives us the String
+   *
+   * @param query
+   * @param dataset
    */
-  def tfCalc(query: List[String],row: String): mutable.Map[String, Double] ={
-    val docSize: Double = row.split(" ").length.toDouble
-    var wordFreq = 0.0
-    var normFreq = 0.0
-    val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
-
-
-    val wCounter = WordUtil.wordCount(row, query).filter{case (k,v) => v!= 0}
-
-    query.foreach { kWord =>
-      if (wCounter != null && wCounter.nonEmpty)
-        wordFreq = wCounter.getOrElse(kWord, 0).toDouble
-      else
-        wordFreq = 0.0
-      normFreq = wordFreq / docSize
-      ris += (kWord -> normFreq)
-    }
-    ris
-  }
-
-  // DataFrame == Dataset[Row]
-  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
-  // R.toString, where R is a Row type gives us the String
-  // Here I'm not sure which variable use to call the function
-  def tfCalcSP(query: List[String], row: String): RDD[(String, Double)] ={
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[*]")
-      .appName("tfCalcSP")
-      .getOrCreate()
-
-    val docSize: Double = row.split(" ").length.toDouble
-    var wordFreq = 0.0
-    var normFreq = 0.0
-    val ris: mutable.Map[String, Double] = mutable.Map.empty[String, Double].withDefaultValue(0.0)
-
-
-    val wCounter = WordUtilSp.wordCountSP(row, query).filter{case (k,v) => v!= 0}
-
-    query.foreach { kWord =>
-      if (!wCounter.isEmpty())
-        wordFreq = wCounter.filter(pair => pair._1==kWord).map(pair => pair._2).sum()
-      else
-        wordFreq = 0.0
-      normFreq = wordFreq / docSize
-      ris += (kWord -> normFreq)
-
-    }
-
-    spark.sparkContext.parallelize(ris.toSeq)
-  }
-
-
-  // DataFrame == Dataset[Row]
-  // .collect() gives us an Array of Rows instead (you can use it as a normal array)
-  // R.toString, where R is a Row type gives us the String
-  def idfTfCalcSP(query: List[String] , dataset : DataFrame): Unit = {
-    var idf_val = idfCalcSP(query, dataset)
-    var ranks: Array[Double] = Array.empty
-    var tf_v: mutable.Map[String, Double] = mutable.Map()
-    println(dataset.collect().length)
-    for (i <- 1 until dataset.collect().length) {
-      var t = 0.0
-     // tf_v = tfCalcSP(query, dataset.collect()(i).toString())
-      // TODO: get the values inside the RDDs and multiply the one with the same kword and sum them
-      //   query.foreach(kword => t = t + (idf_val.collect(kword) * tf_v.getOrElse(kword, 0.0)))
-      //            ^ for each word in the query
-      ranks = ranks :+ t
-
-     // if (t > 0) println(dataset(i)(constant.Columns(0)) + " rank (t): " + t)
-
-    }
-    var posList: List[Int] = List.empty
-    var max = 0
-
-    for( j <- 1 to 10)
-    {
-      max = 0
-      for (i <- 1 until dataset.collect().length-1) {
-        if (ranks(max) < ranks(i) && !posList.contains(i))
-          max = i
+  def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): Unit = {
+    val idf_val = idfCalcSP(query, dataset, spark).collect().toMap
+    val tf_v = tfCalcSP(query, dataset, spark).collect().toMap
+    val ranks = Array.ofDim[Double](dataset.columns.length)
+    var rowIndex = 0
+    val rdd = dataset.rdd
+    rdd.foreachPartition { partition =>
+      partition.foreach { row =>
+        val tfIdf = query.map { q =>
+          val idf = idf_val.filter(_._1 == q).map(_._2).take(1).headOption.getOrElse(0.0)
+          val tf = tf_v.filter(_._1 == q).map(_._2).take(1).headOption.getOrElse(0.0)
+          idf * tf
+        }.sum
+        ranks(rowIndex) = tfIdf
+        if (tfIdf > 0) {
+          println(f"Title: ${row(0)} \t Weights value: $tfIdf%.6f")
+        }
+        rowIndex += 1
       }
-      posList = posList.appended(max)
-
-      //println( j + ". " + dataset(max+1)(constant.Columns(0)))
     }
-
-    //calls idf_calc
-    //calls tf_calc
-    //calculates the ranking
+    val topN = 20
+    val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
+    for (i <- 0 until topN) {
+      println(s"${i + 1}. ${dataset.columns(topNIndexes(i))}")
+      // printf("%d. %s%n", j + 1, dataset(pos + 1)(constant.Columns(0)))
+    }
   }
+
 
 }

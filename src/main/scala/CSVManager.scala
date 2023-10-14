@@ -1,5 +1,6 @@
 import com.opencsv.CSVReader
-import java.io.FileReader
+import java.io.{BufferedReader, FileReader}
+import scala.collection.mutable.ListBuffer
 
 object CSVManager {
 
@@ -10,109 +11,112 @@ object CSVManager {
    * @return
    */
   def importCsv(csvFile: String, columnIndices: List[Int]): List[Map[String, String]] = {
-    val reader = new CSVReader(new FileReader(csvFile))
-    val header = reader.readNext() // Assuming the first row contains column names
+    var reader: CSVReader = null
+    val data = ListBuffer[Map[String, String]]()
+
     try {
+      reader = new CSVReader(new BufferedReader(new FileReader(csvFile)))
+      val header = reader.readNext() // Assuming the first row contains column names
       var line: Array[String] = null
-      val data = scala.collection.mutable.ListBuffer[Map[String, String]]()
-      while ({ line = reader.readNext(); line != null }) {
+
+      while ( {
+        line = reader.readNext(); line != null
+      }) {
         val rowData = columnIndices.map { columnIndex =>
           header(columnIndex) -> (if (columnIndex < line.length) line(columnIndex) else "")
         }.toMap
         data += rowData
       }
-      data.toList
     } finally {
-      reader.close()
+      if (reader != null) {
+        reader.close()
+      }
     }
+
+    data.toList
   }
+
 
   /**
    * compare the words are same or not
-   * @param s
+   * @param s word
    * @return
    */
-  def similarity(s: String): String ={
-    var spl = s.split(" ")
-    //spl.foreach(println)
-    spl.foreach(w1  => if (w1.length > 3) {
-      var p1 = spl.indexOf(w1)
-      //  println(w1)
-      spl.foreach(w2 =>
-      if ((spl.indexOf(w1) != spl.indexOf(w2)) && (w2.length > 3) ){
-        if (compare(w1,w2)) {
-          var p2 = spl.indexOf(w2)
-          if(w1.length > w2.length)
-            spl(p1) = w2
-          else
-            spl(p2) = w1
+  def similarity(s: String): String = {
+    val words = s.split(" ")
+    val result = words.map { word1 =>
+      if (word1.length > 3) {
+        val similarWords = words.filter(word2 =>
+          word2.length > 3 && word1 != word2 && compare(word1, word2)
+        )
+        if (similarWords.nonEmpty) {
+          val mostSimilarWord = similarWords.maxBy(_.length)
+          toRoot(mostSimilarWord)
+        } else {
+          toRoot(word1)
         }
-      })
-      spl(p1) = toRoot(w1)
-    })
-
-    spl.mkString(" ")
-  }
-
-  def toRoot(w:String) : String ={
-  var t = w
-    if(t == "mice")
-      t = "mouse"
-    if (t == "teeth")
-      t = "tooth"
-    if (t == "children")
-      t = "child"
-    if (t == "women")
-      t = "woman"
-    if (t == "men")
-      t = "man"
-    if (t == "geese")
-      t = "goose"
-    if (t == "feet")
-      t = "foot"
-    if (t == "people")
-      t = "person"
-    if (t == "oxen")
-      t = "ox"
-
-    val exceptions = List("species", "series", "this", "mess", "s")
-
-    if (t.endsWith("iness"))
-      t = t.slice(0, w.length - 5).concat("y")
-    if (t.endsWith("ness"))
-      t = t.slice(0, w.length - 4)
-    if (!exceptions.contains(t)) {
-      if (t.endsWith("ies"))
-        t = w.slice(0, w.length - 3).concat("y")
-      if (t.endsWith("ves"))
-        t = t.slice(0, w.length - 3).concat("f")
-      if (t.endsWith("es"))
-        t = t.slice(0, w.length - 2)
-      if (t.endsWith("s"))
-        t = t.slice(0, w.length - 1)
+      } else {
+        word1
+      }
     }
-    if (t.endsWith("ing"))
-      t = t.slice(0, w.length - 3)
-    if (t.endsWith("ed"))
-      t = t.slice(0, w.length - 2)
-    if (t.endsWith("er"))
-      t = t.slice(0, w.length - 2)
-    if (t.endsWith("est") && t!="best" && t!= "forest")
-      t = t.slice(0, w.length - 3)
-    t
+
+    result.mkString(" ")
   }
 
-  def compare (w1:String, w2:String) : Boolean ={
-    var min_s = math.min(w1.length, w2.length)
-    var b = true
-    for(i <- 0 until min_s) {
-      b = b && (w1(i) == w2(i)) }
-    b
+
+  def toRoot(w: String): String = {
+    val rootWords = Map(
+      "mice" -> "mouse",
+      "teeth" -> "tooth",
+      "children" -> "child",
+      "women" -> "woman",
+      "men" -> "man",
+      "geese" -> "goose",
+      "feet" -> "foot",
+      "people" -> "person",
+      "oxen" -> "ox"
+    )
+
+    val exceptions = Set("species", "series", "this", "mess", "s")
+
+    val transformedWord = w match {
+      case s if rootWords.contains(s) => rootWords(s)
+      case s if s.endsWith("iness") => s.dropRight(5) + "y"
+      case s if s.endsWith("ness") => s.dropRight(4)
+      case s if !exceptions.contains(s) =>
+        s match {
+          case str if str.endsWith("ies") => str.dropRight(3) + "y"
+          case str if str.endsWith("ves") => str.dropRight(3) + "f"
+          case str if str.endsWith("es") => str.dropRight(2)
+          case str if str.endsWith("s") => str.dropRight(1)
+          case _ => s
+        }
+      case s if s.endsWith("ing") => s.dropRight(3)
+      case s if s.endsWith("ed") => s.dropRight(2)
+      case s if s.endsWith("er") => s.dropRight(2)
+      case s if s.endsWith("est") && s != "best" && s != "forest" => s.dropRight(3)
+      case _ => w
+    }
+
+    transformedWord
   }
 
-  def print(wordList: List[(String, String, String, String)], min :Int,  max : Int): Unit ={
-    wordList.slice(min, max).foreach(s =>
-      println("Title: " + s._1 + "\nSubtitle: " + s._2 + "\nTag: " + s._3 + " \nDescription:" + s._4 + "\n --------"))
-
+  def compare(w1: String, w2: String): Boolean = {
+    w1.zip(w2).forall { case (c1, c2) => c1 == c2 }
   }
+
+  /**
+   *
+   * @param wordExtracted
+   */
+  def printWordExtracted(wordExtracted: List[Map[String, String]]): Unit = {
+    for ((entry, index) <- wordExtracted.zipWithIndex) {
+      val title = entry.getOrElse("title", "")
+      val subtitle = entry.getOrElse("subtitle", "")
+      val categories = entry.getOrElse("categories", "")
+      val description = entry.getOrElse("description", "")
+      println(s"Title: $title\nsubtitle: $subtitle\ncategories: $categories\nDescription: $description\n------------------------")
+    }
+  }
+
 }

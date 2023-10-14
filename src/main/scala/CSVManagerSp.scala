@@ -1,13 +1,17 @@
 import org.apache.spark.sql._
 
 object CSVManagerSp {
-  def importSP(path: String): DataFrame ={
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[*]")
-      .appName("CSVReader")
-      .getOrCreate()
-
+  /**
+   * CSVRead using scala
+   * @param path the csvfile path
+   * @param spark the spark session
+   * @return dataframe csv
+   */
+  def importSP(path: String, spark: SparkSession): DataFrame ={
     val csvIm = spark.read.option("header", "true").csv(path)
-    csvIm.select("title", "subtitle", "categories", "description")
+    val selectedDF = csvIm.select("title", "subtitle", "categories", "description")
+    selectedDF.show()
+    selectedDF
   }
 }
+

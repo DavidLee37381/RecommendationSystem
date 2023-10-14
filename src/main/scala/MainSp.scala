@@ -1,21 +1,25 @@
+import org.apache.spark.sql.SparkSession
+
 object MainSp {
-
   def main(args: Array[String]): Unit = {
-    // import dataset and print
-    val wordExtracted = CSVManagerSp.importSP(constant.DATASET_CSV_PATH)
-    println(wordExtracted)
+    val spark: SparkSession = SparkSession.builder()
+      .appName("Recommandation")
+      .master("local[*]")
+      .getOrCreate()
 
-    // wordCount
-    val queryPath = constant.QUERY_PATH
-    val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
-    wordExtracted.collect().foreach(
-      row => WordUtilSp.wordCountSP(row.toString, keywords).
-        collect().
-        foreach(f =>
-          println(f._1 + " | " + f._2))
-    )
+    try {
+      // import dataset and print
+      val wordExtracted = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
+      println(wordExtracted)
 
-    //
+      val queryPath = constant.QUERY_PATH
+      val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
 
+      TfIdfCalcSp.tfIdfCalcSP(keywords, wordExtracted, spark)
+    } finally {
+      if (spark != null) {
+        spark.stop()
+      }
+    }
   }
 }
