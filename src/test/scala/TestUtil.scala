@@ -83,6 +83,7 @@ class TestUtil extends AnyFunSuite{
   }
 
 
+
   /**
    * CSVManagerSp.importSP
    */
@@ -94,22 +95,6 @@ class TestUtil extends AnyFunSuite{
     val csvData = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
     spark.close()
     println(csvData)
-  }
-
-  /**
-   * TfIdfCalcSp.idfCalcSP
-   */
-  test("TfIdfCalcSp.idfCalcSP") {
-    val spark: SparkSession = SparkSession.builder()
-      .appName("idfCalcSP")
-      .master("local[*]")
-      .getOrCreate()
-
-    val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
-    val idfSP = TfIdfCalcSp.idfCalcSP(keywords, dataFrame, spark)
-    println(idfSP)
-    spark.close()
   }
 
   /**
@@ -129,6 +114,22 @@ class TestUtil extends AnyFunSuite{
     println(row)
     val tfSP = TfIdfCalcSp.tfCalcSP(keywords, row, spark)
     println(tfSP)
+    spark.close()
+  }
+
+  /**
+   * TfIdfCalcSp.idfCalcSP
+   */
+  test("TfIdfCalcSp.idfCalcSP") {
+    val spark: SparkSession = SparkSession.builder()
+      .appName("idfCalcSP")
+      .master("local[*]")
+      .getOrCreate()
+
+    val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
+    val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
+    val idfSP = TfIdfCalcSp.idfCalcSP(keywords, dataFrame, spark)
+    println(idfSP)
     spark.close()
   }
 

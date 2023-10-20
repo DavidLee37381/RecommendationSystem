@@ -13,12 +13,7 @@ object WordUtilSp {
    * @param s
    * @return
    */
-  def wordCountSP(s: String, kList: List[String]): RDD[(String, Int)] = {
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[*]")
-      .appName("wordCount")
-      .getOrCreate()
-
+  def wordCountSP(s: String, kList: List[String], spark: SparkSession ): RDD[(String, Int)] = {
     var source = Source.fromFile(constant.EXCLUDE_PATH)
     val exclude = source.getLines().toList.flatMap(line => line.split(" "))
     source.close()
