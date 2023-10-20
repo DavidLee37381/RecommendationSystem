@@ -123,43 +123,45 @@ object TfIdfCalcSp {
     var results = List[(String, Double)]()
 
     // 步骤 3：从 DataFrame 创建一个 RDD
-    val rdd = dataset.rdd
+    val size = dataset.count().toDouble
+
+    val arrayRow = dataset.select("title", "subtitle", "categories", "description").collect()
 
     // 步骤 4：处理每个分区
-    rdd.foreachPartition { partition =>
-      partition.foreach { row =>
-        val title = row.getString(2) // 假设标题在第一列
-        val text = row.mkString("") // 将行转换为文本
+    arrayRow.foreach { row =>
+      val title = row.getString(2) // 假设标题在第一列
+      val text = row.mkString("") // 将行转换为文本
 
-        // 步骤 5：计算文档的 TF 值
-        val tfValuesR = tfCalcSP(query, text, spark)
-        val tfValues = tfValuesR.collectAsMap()
+      // 步骤 5：计算文档的 TF 值
+      val tfValuesR = tfCalcSP(query, text, spark)
+      val tfValues = tfValuesR.collectAsMap()
 
-        // 步骤 6：计算每个查询词的 TF-IDF 值
-        val tfIdfValues = query.map { q =>
-          val idf = idf_val.getOrElse(q, 0.0)
-          val tf = tfValues.getOrElse(q, 0.0)
-          idf * tf
-        }
+      // 步骤 6：计算每个查询词的 TF-IDF 值
+      val tfIdfValues = query.map { q =>
+        val idf = idf_val.getOrElse(q, 0.0)
+        val tf = tfValues.getOrElse(q, 0.0)
+        idf * tf
+      }
 
-        // 步骤 7：计算文档的总 TF-IDF 值
-        val totalTfIdf = tfIdfValues.sum
+      // 步骤 7：计算文档的总 TF-IDF 值
+      val totalTfIdf = tfIdfValues.sum
 
-        // 步骤 8：存储非零 TF-IDF 结果
-        if (totalTfIdf > 0) {
-          results = (title, totalTfIdf) :: results
-        }
+      // 步骤 8：存储非零 TF-IDF 结果
+      if (totalTfIdf > 0) {
+        results = (title, totalTfIdf) :: results
       }
     }
-
-    // 步骤 9：打印前 N 个结果
-    val topN = 20
-    val topResults = results.sortBy(-_._2).take(topN)
-    for ((title, tfIdf) <- topResults.zipWithIndex) {
-      val rank = tfIdf + 1 // Add 1 to make the rank start from 1
-      println(s"$rank. $title \t 权重值：$tfIdf%.6f")
-    }
   }
+
+  // 步骤 9：打印前 N 个结果
+  /*
+  val topN = 20
+  val topResults = results.sortBy(-_._2).take(topN)
+  for ((title, tfIdf) <- topResults.zipWithIndex) {
+    val rank = tfIdf + 1 // Add 1 to make the rank start from 1
+    println(s"$rank. $title \t 权重值：$tfIdf%.6f")
+  }
+  */
 
 
 }
