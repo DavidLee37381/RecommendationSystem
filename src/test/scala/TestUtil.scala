@@ -122,8 +122,12 @@ class TestUtil extends AnyFunSuite{
       .getOrCreate()
 
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
-    val tfSP = TfIdfCalcSp.tfCalcSP(keywords, dataFrame, spark)
+    val csvData = CsvUtil.readCsvFile(constant.DATASET_CSV_PATH)
+    val random = new Random()
+    val selectedRows = random.shuffle(csvData).take(20) // This shuffles and selects a subset of rows
+    val row = selectedRows.map(row => row.mkString("")).mkString("\n")
+    println(row)
+    val tfSP = TfIdfCalcSp.tfCalcSP(keywords, row, spark)
     println(tfSP)
     spark.close()
   }
