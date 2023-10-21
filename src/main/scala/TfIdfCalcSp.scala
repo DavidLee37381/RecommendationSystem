@@ -1,5 +1,5 @@
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.mutable
 
@@ -28,10 +28,12 @@ object TfIdfCalcSp {
     }
     val idfMap = docCount.transform((k, v) => Math.log(size / v))
     val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
+    /*
     idfRDD.collect().foreach {
       case (key, value) =>
         println(s"Key: $key, Value: $value")
     }
+     */
     idfRDD
   }
 
@@ -58,10 +60,12 @@ object TfIdfCalcSp {
     }
 
     val tfRDD = spark.sparkContext.parallelize(tf.toSeq)
+    /*
     tfRDD.collect().foreach {
       case (key, value) =>
         println(s" Key: $key, Value: $value")
     }
+    */
     tfRDD
   }
 
@@ -74,94 +78,32 @@ object TfIdfCalcSp {
    * @param query
    * @param dataset
    */
-
-
-  /*
-    def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): Unit = {
-      val idf_val = idfCalcSP(query, dataset, spark).collect().toMap
-      val ranks = Array.ofDim[Double](dataset.collect().length)
-      val rdd = dataset.rdd
-      var rowIndex = 0
-
-      rdd.foreachPartition { partition =>
-        // todo range: 0-4142211, partition values: [empty row]
-        partition.foreach { row =>
-          var tfIdf = 0.0
-          query.map { q =>
-            val text = row.mkString("")
-            val idf = idf_val.filter(_._1 == q).map(_._2).take(1).headOption.getOrElse(0.0)
-            val tf_v = tfCalcSP(query, text, spark)
-
-            // we need to for row of document, we can caculate the term-frequncy of each word of query.
-            // then we multiply the tf of the row for the idf
-
-            tf_v.foreach { case (q, tf_v) =>
-              tfIdf += idf * tf_v
-            }
-            ranks(rowIndex) = tfIdf
-            if (tfIdf > 0) {
-              println(f"Title: ${row(0)} \t Weights value: $tfIdf%.6f")
-            }
-            rowIndex += 1
-          }
-        }
-      }
-
-      val topN = 20
-      val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
-      for (i <- 0 until topN) {
-        println(s"${i + 1}. ${dataset.collect()(topNIndexes(i))(0)}")
-      }
-    }
-    */
-
   def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): Unit = {
-    // 步骤 1：计算 IDF 值
-    val idf_val = idfCalcSP(query, dataset, spark).collect().toMap
+    val idfMap = idfCalcSP(query, dataset, spark).collectAsMap()
+    val size = 10 // for loop 10 rows data
+    val ranks = new Array[Double](size)
 
-    // 步骤 2：初始化用于存储结果的列表
-    var results = List[(String, Double)]()
+    val limitedDataset = dataset.select("title", "subtitle", "categories", "description").limit(size)
+    val tfValuesRdd = limitedDataset.rdd.collect()
 
-    // 步骤 3：从 DataFrame 创建一个 RDD
-    val size = dataset.count().toDouble
-
-    val arrayRow = dataset.select("title", "subtitle", "categories", "description").collect()
-
-    // 步骤 4：处理每个分区
-    arrayRow.foreach { row =>
-      val title = row.getString(2) // 假设标题在第一列
-      val text = row.mkString("") // 将行转换为文本
-
-      // 步骤 5：计算文档的 TF 值
-      val tfValuesR = tfCalcSP(query, text, spark)
-      val tfValues = tfValuesR.collectAsMap()
-
-      // 步骤 6：计算每个查询词的 TF-IDF 值
-      val tfIdfValues = query.map { q =>
-        val idf = idf_val.getOrElse(q, 0.0)
-        val tf = tfValues.getOrElse(q, 0.0)
-        idf * tf
+    for (i <- 0 until size) {
+      val row = tfValuesRdd(i)
+      var tfIdf = 0.0
+      val tfValues = tfCalcSP(query, row.mkString(""), spark).collectAsMap()
+      tfValues.foreach { case (q, tf) =>
+        tfIdf += idfMap.getOrElse(q, 0.0) * tf
       }
-
-      // 步骤 7：计算文档的总 TF-IDF 值
-      val totalTfIdf = tfIdfValues.sum
-
-      // 步骤 8：存储非零 TF-IDF 结果
-      if (totalTfIdf > 0) {
-        results = (title, totalTfIdf) :: results
+      ranks(i) = tfIdf
+      if (tfIdf > 0) {
+        val title = row.getAs[String]("title")
+        println(f"Title: $title \t Weights value: $tfIdf%.6f")
       }
     }
+    val topN = 10
+    val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
+    for (i <- 0 until topN) {
+      println(s"${i + 1}. ${dataset.collect()(topNIndexes(i))(0)}")
+    }
   }
-
-  // 步骤 9：打印前 N 个结果
-  /*
-  val topN = 20
-  val topResults = results.sortBy(-_._2).take(topN)
-  for ((title, tfIdf) <- topResults.zipWithIndex) {
-    val rank = tfIdf + 1 // Add 1 to make the rank start from 1
-    println(s"$rank. $title \t 权重值：$tfIdf%.6f")
-  }
-  */
-
 
 }
