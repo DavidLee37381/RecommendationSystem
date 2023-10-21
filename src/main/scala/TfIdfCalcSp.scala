@@ -101,8 +101,9 @@ object TfIdfCalcSp {
     }
     val topN = 10
     val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
+    val titles = limitedDataset.collect().map(row => row.getAs[String]("title"))
     for (i <- 0 until topN) {
-      println(s"${i + 1}. ${dataset.collect()(topNIndexes(i))(0)}")
+      println(s"${i + 1}. ${titles(topNIndexes(i))}")
     }
   }
 

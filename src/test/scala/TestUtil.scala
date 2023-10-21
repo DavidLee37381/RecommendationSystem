@@ -145,7 +145,6 @@ class TestUtil extends AnyFunSuite{
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
     val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
     val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark)
-    println(tfIdf)
     spark.close()
   }
 }
