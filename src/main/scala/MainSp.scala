@@ -15,7 +15,7 @@ object MainSp {
       val queryPath = constant.QUERY_PATH
       val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
 
-      TfIdfCalcSp.tfIdfCalcSP(keywords, wordExtracted, spark)
+      TfIdfCalcSp.tfIdfCalcSP(keywords, wordExtracted, spark, 20, 10)
     } finally {
       if (spark != null) {
         spark.stop()

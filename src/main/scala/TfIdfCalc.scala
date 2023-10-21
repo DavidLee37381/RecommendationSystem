@@ -76,9 +76,9 @@ object TfIdfCalc {
         println(f"Title: ${dataset(i)(constant.Columns(0))} \t Weights value: $tfIdf%.6f")
       }
     }
-    val posList = (1 until dataset.length - 1).toList
+    val posList = (0 until dataset.length).toList
       .sortWith((i, j) => ranks(i) > ranks(j))
-      .take(20)
+      .take(10)
     println(" \n ---------------------Rank--------------------- \n ")
     for ((pos, j) <- posList.zipWithIndex) {
       printf("%d. %s%n", j + 1, dataset(pos + 1)(constant.Columns(0)))

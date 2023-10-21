@@ -78,9 +78,9 @@ object TfIdfCalcSp {
    * @param query
    * @param dataset
    */
-  def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): Unit = {
+  def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession, size: Int, topN: Int): Unit = {
     val idfMap = idfCalcSP(query, dataset, spark).collectAsMap()
-    val size = 10 // for loop 10 rows data
+    //val size = size // for loop 10 rows data
     val ranks = new Array[Double](size)
 
     val limitedDataset = dataset.select("title", "subtitle", "categories", "description").limit(size)
@@ -99,7 +99,7 @@ object TfIdfCalcSp {
         println(f"Title: $title \t Weights value: $tfIdf%.6f")
       }
     }
-    val topN = 10
+    //val topN = topN
     val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
     val titles = limitedDataset.collect().map(row => row.getAs[String]("title"))
     for (i <- 0 until topN) {

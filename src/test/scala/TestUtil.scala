@@ -78,7 +78,7 @@ class TestUtil extends AnyFunSuite{
    */
   test("TfIdfCalc.tfIdfCalc") {
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val dataset = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7))
+    val dataset = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7)).take(20)
     TfIdfCalc.tfIdfCalc(keywords, dataset.map(_.to(collection.mutable.Map)))
   }
 
@@ -144,7 +144,7 @@ class TestUtil extends AnyFunSuite{
 
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
     val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
-    val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark)
+    val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark, 20, 10)
     spark.close()
   }
 }
