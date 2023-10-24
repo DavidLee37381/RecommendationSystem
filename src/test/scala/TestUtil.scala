@@ -93,6 +93,7 @@ class TestUtil extends AnyFunSuite{
       .master("local[*]")
       .getOrCreate()
     val csvData = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
+    println(csvData.filter(r => r.getString(0).contains("Fiskadoro")).head.getString(3) )
     spark.close()
     println(csvData)
   }
@@ -129,7 +130,7 @@ class TestUtil extends AnyFunSuite{
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
     val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
     val idfSP = TfIdfCalcSp.idfCalcSP(keywords, dataFrame, spark)
-    println(idfSP)
+    idfSP.foreach(println)
     spark.close()
   }
 
@@ -143,9 +144,12 @@ class TestUtil extends AnyFunSuite{
       .getOrCreate()
 
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
+    val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)//.sample(0.02)
     val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark, 20, 10)
     spark.close()
   }
 }
+
+
+
 

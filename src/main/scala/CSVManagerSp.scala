@@ -8,7 +8,8 @@ object CSVManagerSp {
    * @return dataframe csv
    */
   def importSP(path: String, spark: SparkSession): DataFrame ={
-    val csvIm = spark.read.option("header", "true").csv(path)
+    val csvIm = spark.read.option("quote", "\"")
+      .option("escape", "\"").option("header", "true").csv(path)
     val selectedDF = csvIm.select("title", "subtitle", "categories", "description")
     selectedDF.show()
     selectedDF

@@ -16,17 +16,51 @@ object TfIdfCalcSp {
    */
   def idfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): RDD[(String, Double)] = {
     val size = dataset.count().toDouble
-    val docCount = query.foldLeft(collection.mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, kword) =>
-      val text = dataset.select("title", "subtitle", "categories", "description").collect()
-      text.foreach { row =>
+
+    val docCount: mutable.Map[String, Double] = mutable.Map.empty
+    query.foreach( q => {
+      println(q)
+      docCount(q) = dataset.filter(r => {
+        val a = (r.getString(0) + " " +
+        r.getString(1) + " " +
+        r.getString(2) + " " +
+        r.getString(3)).toLowerCase
+          .replace(",", "").replace("\"", "")
+          .replace("-", " ").contains(q)
+      if(a) println(r.getString(0))
+      a
+      }).count().toDouble
+    }
+    )
+    /*dataset.filter(row =>
+        row.getValuesMap(Seq("title", "subtitle", "categories", "description")).values.mkString(" ").toLowerCase.contains(q)).count().toDouble
+    )*/
+
+    // if (q == "minute") println(row)
+    //row.mkString(" ").replace("null", "").toLowerCase.contains(q)
+ /*   val docCount = query.foldLeft(collection.mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, kword) =>
+    //  val text = dataset.select("title", "subtitle", "categories", "description").collect()
+
+/*      dataset.filter(row => row.mkString(" ").toLowerCase.contains(kword)).foreach{ r =>
+        acc(kword) += 1
+      }*/
+      acc(kword) = dataset.filter(row => row.mkString(" ").toLowerCase.contains(kword)).count().toDouble
+/*      dataset.foreach{ row =>
+        println(row)
+        val textString = row.mkString(" ").toLowerCase.split(" ")
+        if(textString.contains(kword)) acc(kword) += 1
+      }*/
+ /*     text.foreach { row =>
         val textString = row.mkString(" ")
         if (textString.contains(kword)) {
           acc(kword) += 1
         }
-      }
+      }*/
       acc
-    }
-    val idfMap = docCount.transform((k, v) => Math.log(size / v))
+    }*/
+
+
+    val idfMap = docCount.map(entry => (entry._1, Math.log(size/entry._2)))
     val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
     /*
     idfRDD.collect().foreach {
@@ -50,12 +84,13 @@ object TfIdfCalcSp {
   def tfCalcSP(query: List[String], row: String, spark: SparkSession): RDD[(String, Double)] = {
     val docSize: Double = row.split(" ").length.toDouble
 
-    val wCounter = WordUtilSp.wordCountSP(row, query, spark).collectAsMap()
+    val wCounter = WordUtilSp.wordCountSP(row, query, spark)//.collectAsMap()
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
     query.foreach { q =>
-      val wordFreq = wCounter.getOrElse(q, 0).toDouble
-      val normFreq = wordFreq / docSize
+      val a = wCounter.lookup(q).head
+      //val wordFreq = wCounter.getOrElse(q, 0).toDouble
+      val normFreq = a / docSize
       tf(q) = normFreq
     }
 
