@@ -83,7 +83,8 @@ object TfIdfCalcSp {
    */
   def tfCalcSP(query: List[String], row: String, spark: SparkSession): RDD[(String, Double)] = {
     val docSize: Double = row.split(" ").length.toDouble
-
+    print(docSize)
+    println(row)
     val wCounter = WordUtilSp.wordCountSP(row, query, spark)//.collectAsMap()
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 

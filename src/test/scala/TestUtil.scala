@@ -53,13 +53,14 @@ class TestUtil extends AnyFunSuite{
    */
   test("TfIdfCalc.tfCalc") {
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val csvData = CsvUtil.readCsvFile(constant.DATASET_CSV_PATH)
-    val random = new Random()
-    val selectedRows = random.shuffle(csvData).take(20) // This shuffles and selects a subset of rows
-    val row = selectedRows.map(row => row.mkString("")).mkString("\n")
-    println(row)
-    val tf = TfIdfCalc.tfCalc(keywords, row)
-    println(tf)
+    val wordExtracted = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7))
+    val selectedRows = wordExtracted.take(20) // This shuffles and selects a subset of rows
+    selectedRows.foreach( r => {
+      println(r.values.mkString(" "))
+      var tf = TfIdfCalc.tfCalc(keywords, r.values.mkString(" "))
+      println(tf)
+    }
+    )
   }
 
   /**
@@ -108,6 +109,16 @@ class TestUtil extends AnyFunSuite{
       .getOrCreate()
 
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
+    val csvData = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
+    val selectedRows = csvData.take(1) // This shuffles and selects a subset of rows
+    selectedRows.foreach( r => {
+      var tf = TfIdfCalcSp.tfCalcSP(keywords, r.mkString(" "), spark)
+      tf.foreach(println)
+    }
+    )
+    /*
+
+    val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
     val csvData = CsvUtil.readCsvFile(constant.DATASET_CSV_PATH)
     val random = new Random()
     val selectedRows = random.shuffle(csvData).take(20) // This shuffles and selects a subset of rows
@@ -115,7 +126,7 @@ class TestUtil extends AnyFunSuite{
     println(row)
     val tfSP = TfIdfCalcSp.tfCalcSP(keywords, row, spark)
     println(tfSP)
-    spark.close()
+    spark.close()*/
   }
 
   /**

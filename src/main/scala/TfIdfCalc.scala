@@ -51,11 +51,15 @@ object TfIdfCalc {
    */
   def tfCalc(query: List[String], row: String): mutable.Map[String, Double] = {
     val docSize: Double = row.split(" ").length.toDouble
+    println("riga: " + row)
+    println(docSize)
     val wCounter = WordUtil.wordCount(row, query)
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
     query.foreach { q =>
       val wordFreq = wCounter.getOrElse(q, 0).toDouble
+      println(q + ":")
+      println(wordFreq)
       val normFreq = wordFreq / docSize
       tf(q) = normFreq
     }
