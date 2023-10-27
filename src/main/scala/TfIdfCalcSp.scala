@@ -88,9 +88,11 @@ object TfIdfCalcSp {
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
     query.foreach { q =>
-      val a = wCounter.lookup(q).head
+      var b = 0.0
+      val a = wCounter.lookup(q)
+      if (!(a.isEmpty)) b = a.head
       //val wordFreq = wCounter.getOrElse(q, 0).toDouble
-      val normFreq = a / docSize
+      val normFreq = b / docSize
       tf(q) = normFreq
     }
 
