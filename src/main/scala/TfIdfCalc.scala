@@ -33,10 +33,14 @@ object TfIdfCalc {
     query.foreach( q =>
       docCount(q)= dataset.count(entry => entry.values.mkString(" ").toLowerCase.contains(q)
     ))
-
+    docCount.foreach(println)
 
     // Calculate IDF
-    val idfMap = docCount.map(entry => (entry._1, Math.log(size / entry._2)))
+    val idfMap = docCount.map(entry => {
+      if (entry._2 > 0) (entry._1, Math.log(size / entry._2))
+      else (entry._1, 0.0)
+    })
+    idfMap.foreach(println)
     idfMap
   }
 
@@ -83,9 +87,21 @@ object TfIdfCalc {
       var tfIdf = 0.0
       val text = constant.Columns.map(column => dataset(i)(column)).mkString("")
       val tf = tfCalc(query, text)
-      tf.foreach { case (q, tf) =>
+      query.foreach(q => {
+        println("spqr")
+        var a = idf(q)
+        println(text)
+        println(a)
+        var b = tf(q)
+        println(b)
+        println(a*b)
+        tfIdf += a * b
+      })
+      /*tf.foreach { case (q, tf) =>
         tfIdf += idf.getOrElse(q, 0.0) * tf
-      }
+      }*/
+      println(text)
+      println(tfIdf)
       ranks(i) = tfIdf
       if (tfIdf > 0) {
         println(f"Title: ${dataset(i)(constant.Columns(0))} \t Weights value: $tfIdf%.6f")

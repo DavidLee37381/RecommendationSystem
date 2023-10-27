@@ -60,7 +60,10 @@ object TfIdfCalcSp {
     }*/
 
 
-    val idfMap = docCount.map(entry => (entry._1, Math.log(size/entry._2)))
+    val idfMap = docCount.map(entry => {
+      if (entry._2 > 0) (entry._1, Math.log(size/entry._2))
+      else (entry._1, 0.0)
+    })
     val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
     /*
     idfRDD.collect().foreach {
@@ -121,15 +124,19 @@ object TfIdfCalcSp {
     //val size = size // for loop 10 rows data
     val ranks = new Array[Double](size)
 
-    val limitedDataset = dataset.select("title", "subtitle", "categories", "description").limit(size)
-    val tfValuesRdd = limitedDataset.rdd.collect()
+    val limitedDataset = dataset.limit(size)
+    val tfValuesRdd = limitedDataset.collect()
 
     for (i <- 0 until size) {
       val row = tfValuesRdd(i)
       var tfIdf = 0.0
-      val tfValues = tfCalcSP(query, row.mkString(""), spark).collectAsMap()
+      val tfValues = tfCalcSP(query, row.mkString(" "), spark).collectAsMap()
       tfValues.foreach { case (q, tf) =>
-        tfIdf += idfMap.getOrElse(q, 0.0) * tf
+        tfIdf += idfMap(q) * tf
+        println("tfidf abcdef")
+        println(tf)
+        print(idfMap(q))
+        println(tfIdf)
       }
       ranks(i) = tfIdf
       if (tfIdf > 0) {

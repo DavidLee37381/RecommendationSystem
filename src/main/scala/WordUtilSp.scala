@@ -26,6 +26,7 @@ object WordUtilSp {
     var allWords = s1.split(" ")
     allWords = allWords.filterNot(element => exclude.contains(element))
     if (kList != null) allWords = allWords.filter(word => kList.contains(word))
+    if (allWords.isEmpty) return spark.sparkContext.emptyRDD
     val rdd0 = spark.sparkContext.parallelize(allWords)
     val rdd1 = rdd0.map(f => (f, 1))
     val rdd2 = rdd1.reduceByKey(_ + _)
