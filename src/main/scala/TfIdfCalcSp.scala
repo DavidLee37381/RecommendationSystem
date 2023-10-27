@@ -131,13 +131,17 @@ object TfIdfCalcSp {
       val row = tfValuesRdd(i)
       var tfIdf = 0.0
       val tfValues = tfCalcSP(query, row.mkString(" "), spark).collectAsMap()
+      query.foreach(q => {
+        tfIdf += idfMap(q) * tfValues(q)
+      } )
+      /*
       tfValues.foreach { case (q, tf) =>
         tfIdf += idfMap(q) * tf
         println("tfidf abcdef")
         println(tf)
         print(idfMap(q))
         println(tfIdf)
-      }
+      }*/
       ranks(i) = tfIdf
       if (tfIdf > 0) {
         val title = row.getAs[String]("title")
