@@ -113,17 +113,6 @@ class TestUtil extends AnyFunSuite{
       tf.foreach(println)
     }
     )
-    /*
-
-    val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val csvData = CsvUtil.readCsvFile(constant.DATASET_CSV_PATH)
-    val random = new Random()
-    val selectedRows = random.shuffle(csvData).take(20) // This shuffles and selects a subset of rows
-    val row = selectedRows.map(row => row.mkString("")).mkString("\n")
-    println(row)
-    val tfSP = TfIdfCalcSp.tfCalcSP(keywords, row, spark)
-    println(tfSP)
-    spark.close()*/
   }
 
   /**

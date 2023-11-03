@@ -1,7 +1,11 @@
+import Main.mianf
 import org.apache.spark.sql.SparkSession
 
 object MainSp {
   def main(args: Array[String]): Unit = {
+    Timer.time(mianf)
+  }
+  def mianf(): Unit = {
     val spark: SparkSession = SparkSession.builder()
       .appName("Recommandation")
       .master("local[*]")
