@@ -13,7 +13,6 @@ object TfIdfCalc {
    */
   def idfCalc(query: List[String], dataset: List[mutable.Map[String, String]]): mutable.Map[String, Double] = {
     val size = dataset.length
-
     // Use foldLeft to simplify code
    /* val docCount = query.foldLeft(mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, q) =>
    /*   dataset.foreach { row => row
@@ -31,16 +30,14 @@ object TfIdfCalc {
     }*/
    val docCount: mutable.Map[String, Double] = mutable.Map.empty
     query.foreach( q =>
-      docCount(q)= dataset.count(entry => entry.values.mkString(" ").toLowerCase.contains(q)
+      docCount(q)= dataset.count(entry =>
+        entry.values.mkString(" ").toLowerCase.contains(q)
     ))
-    docCount.foreach(println)
-
     // Calculate IDF
     val idfMap = docCount.map(entry => {
       if (entry._2 > 0) (entry._1, Math.log(size / entry._2))
       else (entry._1, 0.0)
     })
-    idfMap.foreach(println)
     idfMap
   }
 
@@ -55,15 +52,11 @@ object TfIdfCalc {
    */
   def tfCalc(query: List[String], row: String): mutable.Map[String, Double] = {
     val docSize: Double = row.split(" ").length.toDouble
-    println("riga: " + row)
-    println(docSize)
     val wCounter = WordUtil.wordCount(row, query)
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
     query.foreach { q =>
       val wordFreq = wCounter.getOrElse(q, 0).toDouble
-      println(q + ":")
-      println(wordFreq)
       val normFreq = wordFreq / docSize
       tf(q) = normFreq
     }
@@ -83,18 +76,13 @@ object TfIdfCalc {
   def tfIdfCalc(query: List[String], dataset: List[mutable.Map[String, String]]): Unit = {
     val idf = idfCalc(query, dataset)
     val ranks = new Array[Double](dataset.length)
-    for (i <- 1 until dataset.length) {
+    for (i <- 0 until dataset.length) {
       var tfIdf = 0.0
-      val text = constant.Columns.map(column => dataset(i)(column)).mkString("")
+      val text = constant.Columns.map(column => dataset(i)(column)).mkString(" ")
       val tf = tfCalc(query, text)
       query.foreach(q => {
-        println("spqr")
         var a = idf(q)
-        println(text)
-        println(a)
         var b = tf(q)
-        println(b)
-        println(a*b)
         tfIdf += a * b
       })
       /*tf.foreach { case (q, tf) =>
@@ -107,12 +95,13 @@ object TfIdfCalc {
         println(f"Title: ${dataset(i)(constant.Columns(0))} \t Weights value: $tfIdf%.6f")
       }
     }
+
     val posList = (0 until dataset.length).toList
       .sortWith((i, j) => ranks(i) > ranks(j))
       .take(10)
     println(" \n ---------------------Rank--------------------- \n ")
     for ((pos, j) <- posList.zipWithIndex) {
-      printf("%d. %s%n", j + 1, dataset(pos + 1)(constant.Columns(0)))
+      printf("%d. %s%n", j + 1, dataset(pos)(constant.Columns(0)))
     }
   }
 

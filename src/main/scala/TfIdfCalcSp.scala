@@ -16,10 +16,8 @@ object TfIdfCalcSp {
    */
   def idfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession): RDD[(String, Double)] = {
     val size = dataset.count().toDouble
-
     val docCount: mutable.Map[String, Double] = mutable.Map.empty
     query.foreach( q => {
-      println(q)
       docCount(q) = dataset.filter(r => {
         val a = (r.getString(0) + " " +
         r.getString(1) + " " +
@@ -32,6 +30,7 @@ object TfIdfCalcSp {
       }).count().toDouble
     }
     )
+
     /*dataset.filter(row =>
         row.getValuesMap(Seq("title", "subtitle", "categories", "description")).values.mkString(" ").toLowerCase.contains(q)).count().toDouble
     )*/
@@ -65,6 +64,7 @@ object TfIdfCalcSp {
       else (entry._1, 0.0)
     })
     val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
+
     /*
     idfRDD.collect().foreach {
       case (key, value) =>
@@ -86,8 +86,6 @@ object TfIdfCalcSp {
    */
   def tfCalcSP(query: List[String], row: String, spark: SparkSession): RDD[(String, Double)] = {
     val docSize: Double = row.split(" ").length.toDouble
-    print(docSize)
-    println(row)
     val wCounter = WordUtilSp.wordCountSP(row, query, spark)//.collectAsMap()
     val tf = mutable.Map.empty[String, Double].withDefaultValue(0.0)
 
@@ -120,7 +118,7 @@ object TfIdfCalcSp {
    * @param dataset
    */
   def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession, size: Int, topN: Int): Unit = {
-    val idfMap = idfCalcSP(query, dataset, spark).collectAsMap()
+    val idfMap = idfCalcSP(query, dataset.limit(size), spark).collectAsMap()
     //val size = size // for loop 10 rows data
     val ranks = new Array[Double](size)
 
@@ -130,7 +128,7 @@ object TfIdfCalcSp {
     for (i <- 0 until size) {
       val row = tfValuesRdd(i)
       var tfIdf = 0.0
-      val tfValues = tfCalcSP(query, row.mkString(" "), spark).collectAsMap()
+      val tfValues = tfCalcSP(query, row.mkString(" ").replace("null", ""), spark).collectAsMap()
       query.foreach(q => {
         tfIdf += idfMap(q) * tfValues(q)
       } )

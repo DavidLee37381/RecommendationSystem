@@ -79,8 +79,8 @@ class TestUtil extends AnyFunSuite{
    */
   test("TfIdfCalc.tfIdfCalc") {
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
-    val dataset = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7)).take(21)
-    TfIdfCalc.tfIdfCalc(keywords, (dataset.tail).map(_.to(collection.mutable.Map)))
+    val dataset = CSVManager.importCsv(constant.DATASET_CSV_PATH, List(2, 3, 5, 7)).take(20)
+    TfIdfCalc.tfIdfCalc(keywords, dataset.map(_.to(collection.mutable.Map)))
   }
 
 
