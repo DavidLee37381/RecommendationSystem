@@ -7,19 +7,17 @@ object MainSp {
       .master("local[*]")
       .getOrCreate()
 
-    try {
       // import dataset and print
       val wordExtracted = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)
       println(wordExtracted)
-
       val queryPath = constant.QUERY_PATH
       val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
 
-      TfIdfCalcSp.tfIdfCalcSP(keywords, wordExtracted, spark, 20, 10)
-    } finally {
+      TfIdfCalcSp.tfIdfCalcSP(keywords, wordExtracted, spark, 6810, 10)
+
       if (spark != null) {
         spark.stop()
       }
-    }
+
   }
 }
