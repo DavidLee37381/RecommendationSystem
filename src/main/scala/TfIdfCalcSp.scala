@@ -30,47 +30,11 @@ object TfIdfCalcSp {
       }).count().toDouble
     }
     )
-
-    /*dataset.filter(row =>
-        row.getValuesMap(Seq("title", "subtitle", "categories", "description")).values.mkString(" ").toLowerCase.contains(q)).count().toDouble
-    )*/
-
-    // if (q == "minute") println(row)
-    //row.mkString(" ").replace("null", "").toLowerCase.contains(q)
- /*   val docCount = query.foldLeft(collection.mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, kword) =>
-    //  val text = dataset.select("title", "subtitle", "categories", "description").collect()
-
-/*      dataset.filter(row => row.mkString(" ").toLowerCase.contains(kword)).foreach{ r =>
-        acc(kword) += 1
-      }*/
-      acc(kword) = dataset.filter(row => row.mkString(" ").toLowerCase.contains(kword)).count().toDouble
-/*      dataset.foreach{ row =>
-        println(row)
-        val textString = row.mkString(" ").toLowerCase.split(" ")
-        if(textString.contains(kword)) acc(kword) += 1
-      }*/
- /*     text.foreach { row =>
-        val textString = row.mkString(" ")
-        if (textString.contains(kword)) {
-          acc(kword) += 1
-        }
-      }*/
-      acc
-    }*/
-
-
     val idfMap = docCount.map(entry => {
       if (entry._2 > 0) (entry._1, Math.log(size/entry._2))
       else (entry._1, 0.0)
     })
     val idfRDD = spark.sparkContext.parallelize(idfMap.toSeq)
-
-    /*
-    idfRDD.collect().foreach {
-      case (key, value) =>
-        println(s"Key: $key, Value: $value")
-    }
-     */
     idfRDD
   }
 
@@ -93,18 +57,11 @@ object TfIdfCalcSp {
       var b = 0.0
       val a = wCounter.lookup(q)
       if (!(a.isEmpty)) b = a.head
-      //val wordFreq = wCounter.getOrElse(q, 0).toDouble
       val normFreq = b / docSize
       tf(q) = normFreq
     }
 
     val tfRDD = spark.sparkContext.parallelize(tf.toSeq)
-    /*
-    tfRDD.collect().foreach {
-      case (key, value) =>
-        println(s" Key: $key, Value: $value")
-    }
-    */
     tfRDD
   }
 
@@ -119,7 +76,6 @@ object TfIdfCalcSp {
    */
   def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession, size: Int, topN: Int): Unit = {
     val idfMap = idfCalcSP(query, dataset.limit(size), spark).collectAsMap()
-    //val size = size // for loop 10 rows data
     val ranks = new Array[Double](size)
 
     val limitedDataset = dataset.limit(size)
@@ -132,21 +88,12 @@ object TfIdfCalcSp {
       query.foreach(q => {
         tfIdf += idfMap(q) * tfValues(q)
       } )
-      /*
-      tfValues.foreach { case (q, tf) =>
-        tfIdf += idfMap(q) * tf
-        println("tfidf abcdef")
-        println(tf)
-        print(idfMap(q))
-        println(tfIdf)
-      }*/
       ranks(i) = tfIdf
       if (tfIdf > 0) {
         val title = row.getAs[String]("title")
         println(f"Title: $title \t Weights value: $tfIdf%.6f")
       }
     }
-    //val topN = topN
     val topNIndexes = ranks.zipWithIndex.sortBy(-_._1).take(topN).map(_._2)
     val titles = limitedDataset.collect().map(row => row.getAs[String]("title"))
     for (i <- 0 until topN) {

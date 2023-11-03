@@ -13,22 +13,7 @@ object TfIdfCalc {
    */
   def idfCalc(query: List[String], dataset: List[mutable.Map[String, String]]): mutable.Map[String, Double] = {
     val size = dataset.length
-    // Use foldLeft to simplify code
-   /* val docCount = query.foldLeft(mutable.Map.empty[String, Double].withDefaultValue(0.0)) { (acc, q) =>
-   /*   dataset.foreach { row => row
-       // val text = row("title") + " " + row("subtitle") + " " + row("categories") + " " + row("description")
-        if (row.values.mkString(" ").toLowerCase.contains("novel")) {
-          acc(q) += 1
-        }
-        println(q)
-        println(acc(q))
-        println(row.values.count(s => s.toLowerCase.contains(q)))
-      }*/
-      acc(q) = dataset.count(entry => entry.values.mkString(" ").toLowerCase.contains(q))
-      println(q)
-      acc
-    }*/
-   val docCount: mutable.Map[String, Double] = mutable.Map.empty
+    val docCount: mutable.Map[String, Double] = mutable.Map.empty
     query.foreach( q =>
       docCount(q)= dataset.count(entry =>
         entry.values.mkString(" ").toLowerCase.contains(q)
@@ -85,9 +70,6 @@ object TfIdfCalc {
         var b = tf(q)
         tfIdf += a * b
       })
-      /*tf.foreach { case (q, tf) =>
-        tfIdf += idf.getOrElse(q, 0.0) * tf
-      }*/
       println(text)
       println(tfIdf)
       ranks(i) = tfIdf

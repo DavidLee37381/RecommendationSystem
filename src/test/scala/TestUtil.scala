@@ -1,9 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.reflect.runtime.universe.typeOf
-import scala.util.Random
-
 
 class TestUtil extends AnyFunSuite{
   /**
