@@ -14,5 +14,4 @@ object Main {
     val datalist = wordExtracted.map(_.to(collection.mutable.Map))
     TfIdfCalc.tfIdfCalc(keywords, datalist)
   }
-
 }
