@@ -133,17 +133,21 @@ class TestUtil extends AnyFunSuite{
 
   /**
    * TfIdfCalcSp.tfIdfCalcSP
+   * dataset: 6810
    */
   test("TfIdfCalcSp.tfIdfCalcSP") {
     val spark: SparkSession = SparkSession.builder()
       .appName("tfIdfCalcSP")
       .master("local[*]")
       .getOrCreate()
-
+    val start_time = System.nanoTime()
     val keywords = QueryManager.getQuery(constant.QUERY_PATH).map(_.toLowerCase)
     val dataFrame = CSVManagerSp.importSP(constant.DATASET_CSV_PATH, spark)//.sample(0.02)
-    val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark, 20, 10)
+    val tfIdf = TfIdfCalcSp.tfIdfCalcSP(keywords, dataFrame, spark, 6810, 10)
     spark.close()
+    val end_time = System.nanoTime()
+    val elapsed = (end_time - start_time)
+    println(s"\n ---------------------Time-------------------- \n Elapsed time: $elapsed")
   }
 }
 

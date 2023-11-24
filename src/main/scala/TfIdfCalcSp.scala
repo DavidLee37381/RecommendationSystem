@@ -74,8 +74,9 @@ object TfIdfCalcSp {
    * @param query
    * @param dataset
    */
-  def tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession, size: Int, topN: Int): Unit = {
+  def   tfIdfCalcSP(query: List[String], dataset: DataFrame, spark: SparkSession, size: Int, topN: Int): Unit = {
     val idfMap = idfCalcSP(query, dataset.limit(size), spark).collectAsMap()
+    println(idfMap)
     val ranks = new Array[Double](size)
 
     val limitedDataset = dataset.limit(size)
@@ -85,6 +86,7 @@ object TfIdfCalcSp {
       val row = tfValuesRdd(i)
       var tfIdf = 0.0
       val tfValues = tfCalcSP(query, row.mkString(" ").replace("null", ""), spark).collectAsMap()
+      println(tfValues)
       query.foreach(q => {
         tfIdf += idfMap(q) * tfValues(q)
       } )
