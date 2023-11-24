@@ -10,8 +10,10 @@ object Main {
     // keywords from query
     val queryPath = constant.QUERY_PATH
     val keywords = QueryManager.getQuery(queryPath).map(_.toLowerCase)
+    println(keywords)
     // Document ranking using TF-IDF function.
     val datalist = wordExtracted.map(_.to(collection.mutable.Map))
+    println(datalist)
     TfIdfCalc.tfIdfCalc(keywords, datalist)
   }
 }

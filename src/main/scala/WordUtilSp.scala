@@ -1,6 +1,5 @@
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import scala.io.Source
 
 
 object WordUtilSp {
@@ -15,9 +14,7 @@ object WordUtilSp {
    */
   def wordCountSP(s: String, kList: List[String], spark: SparkSession): RDD[(String, Int)] = {
 
-    var source = Source.fromFile(constant.EXCLUDE_PATH)
-    val exclude = source.getLines().toList.flatMap(line => line.split(" "))
-    source.close()
+    val exclude = spark.read.textFile(constant.EXCLUDE_PATH).collect().mkString(" ").split(" ").toList
 
     var s1 = s.map(w => if (!(w.isLetter || w.isSpaceChar)) ' ' else w)
     s1 = s1.replace("  ", " ")
@@ -32,4 +29,5 @@ object WordUtilSp {
     val rdd2 = rdd1.reduceByKey(_ + _)
     rdd2
   }
+
 }
